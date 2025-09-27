@@ -15,7 +15,10 @@ import Preview from './features/preview/Preview.tsx'
 
 const rootRoute = createRootRoute({
   component: () => (
-   <Preview></Preview>
+    <main style={{display: "flex"}}>
+    <Editor></Editor>
+    <Preview></Preview>
+    </main>
   ),
 })
 
