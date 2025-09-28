@@ -5,6 +5,7 @@ import {produce} from "immer";
 
 export interface CvState {
     workExperience: Array<Experience>
+    education: Array<Experience>
 }
 
 export interface Experience {
@@ -30,11 +31,11 @@ function createEmptyWorkExperience():Experience{
 
 export const useCv = create(
   combine(
-    { workExperience: [createEmptyWorkExperience()]} as CvState,
+    { workExperience: [createEmptyWorkExperience()], education:[createEmptyWorkExperience()]} as CvState,
     (set) => ({
-        addWorkExperience: () =>
+        addWorkExperience: (experience:keyof CvState) =>
             set((state) => ({
-            workExperience: [...state.workExperience, createEmptyWorkExperience()],
+            [experience]: [...state[experience], createEmptyWorkExperience()],
             })),
         updateWorkExperience: (
         experience: keyof CvState, 
@@ -43,9 +44,9 @@ export const useCv = create(
         id: string
         ) =>
         set(produce((state: CvState) => {
-            const index = state.workExperience.findIndex(el => el.id === id)
+            const index = state[experience].findIndex(el => el.id === id)
             if (index !== -1) {
-            (state[experience])[index][field] = value
+                (state[experience])[index][field] = value
             }
         })),
         

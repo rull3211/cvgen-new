@@ -1,50 +1,28 @@
 import { Box, Button, Typography } from "@mui/material";
-import { useRef } from "react";
+import { useEffect, useRef, useState } from "react";
+import PDFPagination from "../paginatedTest/PaginatedApp";
+import Export from "../exportContainer/Export";
 import styles from "./PreviewStyles.module.scss"
 import { a4Height, a4HeightInCm, a4WidthInCm, a4width } from "@/constants";
 import { useCv } from "@/hooks/useCv";
+import { exportPDF } from "@/hooks/exportPdf";
+import { usePagination } from "@/hooks/usePagination";
 
-async function exportPDF(html: string, css:string) {
-  try {
-    const response = await fetch("http://localhost:3001/generate-pdf", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ html, css }),
-    });
 
-    if (!response.ok) {
-      throw new Error("PDF generation failed");
-    }
 
-    // Hent PDF som blob
-    const blob = await response.blob();
-    const url = window.URL.createObjectURL(blob);
-
-    // Lag en midlertidig <a> for å laste ned
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "resume.pdf";
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    window.URL.revokeObjectURL(url);
-
-    console.log("PDF downloaded successfully!");
-  } catch (err) {
-    console.error("Error exporting PDF:", err);
-  }
-}
 
 export default function Preview(){
+   const { leftPages, rightPages} = usePagination();
+  const [page, setPage] = useState(0)
+  const [startExport, setExport] = useState(false)
+  function handlePageAction(num:number){
+    const length = Math.max(leftPages.length, rightPages.length)
+    setPage((page + num + length) % length);
+  }
      const exportPreview = () => {
         if (!previewRef.current) return;
-
         const node = previewRef.current;
-
-        // --- Extract HTML ---
         const html = node.outerHTML;
-
-        // --- Extract CSS (from all loaded stylesheets) ---
         const cssText = Array.from(document.styleSheets)
         .map((sheet) => {
             try {
@@ -52,18 +30,16 @@ export default function Preview(){
                 .map((rule) => rule.cssText)
                 .join("\n");
             } catch (e) {
-            // Ignore CORS-protected stylesheets
             return "";
             }
         })
         .join("\n");
 
-        console.log("=== HTML ===");
-        console.log(html);
-        console.log("=== CSS ===");
-        console.log(cssText);
-        exportPDF(html, cssText);
+        exportPDF(html, cssText).finally(()=>setExport(false));
     };
+    useEffect(()=>{
+      if(startExport)exportPreview()
+    },[startExport])
     const previewRef = useRef<HTMLDivElement>(null);
     const vw = window.innerWidth;
     const vh = window.innerHeight;
@@ -72,9 +48,12 @@ export default function Preview(){
 
     return(
         <>
-        <Button onClick={exportPreview}>Eksporter</Button>
+       
+        <Button onClick={()=>{setExport(true)}}>Eksporter</Button>
+         {startExport&&<Export ref={previewRef}></Export>}
         <div style={{transform: `scale(${scale})`,transformOrigin: "top left"}}>
-            <Box ref={previewRef} sx={{display:"flex",
+          
+            <Box  sx={{display:"flex",
             height: a4Height+"cm",
             width: a4width+"cm",
            
@@ -82,23 +61,49 @@ export default function Preview(){
             }}
 
             >
-                <section className={styles.left}>
-                    
-                </section>
-                <section className={styles.right}>
-                    {cv.workExperience.map(el => {
-                        return <section key={el.id}>
-                            <Typography>{el.tittel}</Typography>
-                            <Typography>{el.institusjon}</Typography>
-                            <Typography>{el.fra}</Typography>
-                            <Typography>{el.til}</Typography>
-                            <Typography>{el.by}</Typography>
-                            <Typography>{el.beskrivelse}</Typography>
-
-                        </section>
-                    })}
-                </section>
+            <PDFPagination >
+            </PDFPagination>
+              
+            <div className={styles.preview}>
+              <div className={styles.left}>
+                {leftPages[page]?.map((rowIndex) =>{ 
+                
+                const el = cv.education[rowIndex]
+                return(
+                  <div key={rowIndex}>
+                    <Typography>{el.tittel}</Typography>
+                    <Typography>{el.institusjon}</Typography>
+                    <Typography>{el.fra}</Typography>
+                    <Typography>{el.til}</Typography>
+                    <Typography>{el.by}</Typography>
+                    <Typography>{el.beskrivelse}</Typography>
+                  </div>
+                )})}
+              </div>        
+              <div className={styles.right}>
+                {rightPages[page]?.map((rowIndex) => {
+                    const el = cv.workExperience[rowIndex]
+                    return(
+                  <div key={rowIndex}>
+                    <Typography>{el.tittel}</Typography>
+                    <Typography>{el.institusjon}</Typography>
+                    <Typography>{el.fra}</Typography>
+                    <Typography>{el.til}</Typography>
+                    <Typography>{el.by}</Typography>
+                    <Typography>{el.beskrivelse}</Typography>
+                    </div>
+                )})}
+              </div>
+            </div>
+            
+                     
             </Box>
+            <section style={{display: "flex"}}>
+               <Button disabled={Math.max(leftPages.length, rightPages.length) ===1} onClick={()=>handlePageAction(-1)}>Prev</Button>
+              <Typography>{page+1}/{Math.max(leftPages.length, rightPages.length)}</Typography>
+              <Button disabled={Math.max(leftPages.length, rightPages.length) ===1} onClick={()=>handlePageAction(+1)}>Next</Button>
+            </section>
+           
         </div>
         
         </>

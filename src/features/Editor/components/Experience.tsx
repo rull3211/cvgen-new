@@ -19,11 +19,13 @@ interface Props{
 
 export default function Experience(props:Props){
     const cv = useCv()
-    const workExperience = cv.workExperience.find(el=> el.id === props.id)
+    const workExperience = cv[props.type].find(el=> el.id === props.id)
     return <LocalizationProvider dateAdapter={AdapterDayjs}>
         <section className={styles.experience}>
             <section className={styles.row}>
-                <LabelWrapper label={props.label1}><TextField onChange={el=>cv.updateWorkExperience(props.type, "tittel", el.target.value, props.id )} value={workExperience?.tittel} fullWidth/></LabelWrapper>
+                <LabelWrapper label={props.label1}><TextField onChange={el=>{
+                    console.log(el.target.value)
+                    cv.updateWorkExperience(props.type, "tittel", el.target.value, props.id )}} value={workExperience?.tittel} fullWidth/></LabelWrapper>
                 <LabelWrapper label={props.label2}><TextField onChange={el=>cv.updateWorkExperience(props.type, "institusjon", el.target.value, props.id )} value={workExperience?.institusjon} fullWidth/></LabelWrapper>
             </section>
            
