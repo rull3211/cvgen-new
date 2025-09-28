@@ -71,16 +71,7 @@ export default function PDFPagination() {
         aria-hidden
       >
         <div ref={leftRef} className={styles.left}>
-          {cv.education.map((el, i) => (
-            <div key={i} data-index={i}>
-                <Typography>{el.tittel}</Typography>
-                <Typography>{el.institusjon}</Typography>
-                <Typography>{el.fra}</Typography>
-                <Typography>{el.til}</Typography>
-                <Typography>{el.by}</Typography>
-                <Typography>{el.beskrivelse}</Typography>
-            </div>
-          ))}
+          
         </div>
         <div ref={rightRef} className={styles.right}>
           { cv.workExperience.map((el, i) => (
@@ -92,6 +83,16 @@ export default function PDFPagination() {
                 <Typography>{el.by}</Typography>
                 <Typography>{el.beskrivelse}</Typography>
 
+            </div>
+          ))}
+          {cv.education.map((el, i) => (
+            <div key={i} data-index={i}>
+                <Typography>{el.tittel}</Typography>
+                <Typography>{el.institusjon}</Typography>
+                <Typography>{el.fra}</Typography>
+                <Typography>{el.til}</Typography>
+                <Typography>{el.by}</Typography>
+                <Typography>{el.beskrivelse}</Typography>
             </div>
           ))}
         </div>
