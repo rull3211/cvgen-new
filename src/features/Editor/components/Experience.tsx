@@ -4,7 +4,7 @@ import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import styles from "../editor.module.scss"
 import LabelWrapper from './LabelWrapper';
-import type {CvState} from '@/hooks/useCv';
+import type {CvState, ExperienceKey} from '@/hooks/useCv';
 import {  useCv } from '@/hooks/useCv';
 
 interface Props{
@@ -13,7 +13,7 @@ interface Props{
     label3:string
     label4:string
     label5:string
-    type:keyof CvState
+    type: keyof Pick<CvState, ExperienceKey>
     id:string
 }
 

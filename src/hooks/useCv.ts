@@ -6,6 +6,7 @@ import {produce} from "immer";
 export interface CvState {
     workExperience: Array<Experience>
     education: Array<Experience>
+    personalDetails: PersonalDetails
 }
 
 export interface Experience {
@@ -18,6 +19,17 @@ export interface Experience {
     beskrivelse: string | undefined
 }
 
+export interface PersonalDetails{
+    jobbtittel: string,
+    fornavn: string,
+    etternavn: string,
+    email: string,
+    telefon: string,
+    adresse:string,
+    by: string,
+    land: string
+}
+
 function createEmptyWorkExperience():Experience{
     return {
         id: crypto.randomUUID(),
@@ -28,28 +40,54 @@ function createEmptyWorkExperience():Experience{
         til: undefined,
         beskrivelse:""}
 }
+function createEmptyPersonalDetails():PersonalDetails{
+    return{
+        jobbtittel: "",
+        fornavn: "",
+        etternavn: "",
+        email: "",
+        telefon: "",
+        adresse:"",
+        by: "",
+        land: ""
+    }
+}
+
+export type ExperienceKey = "workExperience" | "education";
 
 export const useCv = create(
   combine(
-    { workExperience: [createEmptyWorkExperience()], education:[createEmptyWorkExperience()]} as CvState,
+    {
+      workExperience: [createEmptyWorkExperience()],
+      education: [createEmptyWorkExperience()],
+      personalDetails: createEmptyPersonalDetails()
+    } as CvState,
     (set) => ({
-        addWorkExperience: (experience:keyof CvState) =>
-            set((state) => ({
-            [experience]: [...state[experience], createEmptyWorkExperience()],
-            })),
-        updateWorkExperience: (
-        experience: keyof CvState, 
-        field: keyof Experience, 
-        value: string, 
-        id: string
-        ) =>
-        set(produce((state: CvState) => {
-            const index = state[experience].findIndex(el => el.id === id)
-            if (index !== -1) {
-                (state[experience])[index][field] = value
-            }
+      addWorkExperience: (experience: ExperienceKey) =>
+        set((state) => ({
+          [experience]: [...state[experience], createEmptyWorkExperience()],
         })),
-        
+
+      updateWorkExperience: (
+        experience: ExperienceKey,
+        field: keyof Experience,
+        value: string,
+        id: string
+      ) =>
+        set(produce((state: CvState) => {
+          const index = state[experience].findIndex(el => el.id === id)
+          if (index !== -1) {
+            state[experience][index][field] = value
+          }
+        })),
+
+      updatePersonalDetails: (
+        field: keyof PersonalDetails,
+        value: string,
+      ) =>
+        set(produce((state: CvState) => {
+          state.personalDetails[field] = value
+        })),
     })
   )
 )
