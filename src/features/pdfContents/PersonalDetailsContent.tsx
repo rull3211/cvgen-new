@@ -1,4 +1,5 @@
 import { Typography } from "@mui/material";
+import style from "../preview/PreviewStyles.module.scss"
 import type { PersonalDetails } from "@/hooks/useCv";
 
 interface Props{
@@ -7,16 +8,26 @@ interface Props{
 
 
 export default function PersonalDetailsContent({element}: Props){
-    return(
-       <section>
-            <Typography>{element.fornavn} {element.etternavn}</Typography>
-            <Typography>{element.jobbtittel}</Typography>
-            <Typography>Details</Typography>
-            <Typography>{element.adresse}</Typography>
-            <Typography>{element.by}</Typography>
-            <Typography>{element.land}</Typography>
-            <Typography>{element.telefon}</Typography>
-            <Typography>{element.email}</Typography>
-         </section> 
+    const {adresse, by, land, telefon, email} =  element
+    const hasDetails = adresse || by || land || telefon || email
+    return(<section>
+            <section className={ style.tittel }>
+               <Typography variant="h2">{element.fornavn} {element.etternavn}</Typography>
+               <span/>
+                <Typography>{element.jobbtittel}</Typography> 
+            </section>
+            <section className={style.details}>
+              {hasDetails && <Typography variant="h2">Details</Typography>}
+                <Typography>{adresse}</Typography>
+                <Typography>{by}</Typography>
+                <Typography>{land}</Typography>
+                <Typography>{telefon}</Typography>
+                <Typography>{email}</Typography>  
+            </section>
+        </section>
+       
+           
+            
+       
     )
 }

@@ -4,9 +4,11 @@ import PDFPagination from "../paginatedTest/PaginatedApp";
 import Export from "../exportContainer/Export";
 import ExperienceContent from "../pdfContents/ExperienceContent";
 import PersonalDetailsContent from "../pdfContents/PersonalDetailsContent";
+import SummaryContent from "../pdfContents/SummaryContent";
+import SkillContent from "../pdfContents/SkillsContent";
 import styles from "./PreviewStyles.module.scss"
 import { a4Height, a4HeightInCm, a4WidthInCm, a4width } from "@/constants";
-import { useCv } from "@/hooks/useCv";
+import {  useCv } from "@/hooks/useCv";
 import { exportPDF } from "@/hooks/exportPdf";
 import { usePagination } from "@/hooks/usePagination";
 
@@ -47,16 +49,51 @@ export default function Preview(){
     const vh = window.innerHeight;
     const scale = Math.min(1, Math.min(vw / a4WidthInCm, vh / a4HeightInCm)*0.9);
     const cv = useCv()
-    const right = cv.order.right.map(el => {
-          const pages = rightPages[el][page]
-          // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-          if(pages === undefined) return null
-          return pages.map(index => {
-              const render = cv[el][index]
-              return <ExperienceContent key={render.id} element={render} />
-          })
-          
-      })
+    const right = cv.order.right.map((el) => {
+        const pages = rightPages[el][page];
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+        if (!pages) return null;
+        
+        return pages.map((index) => {
+          const render = cv[el][index];
+          console.log(render)
+          if (render.type === "summary") {
+            return <SummaryContent key={render.id} text={render.content} />;
+          } else {
+            if(index === 0){
+              const text = render.type ==="workExperience"? "Arbeidserfaring" : "Utdanning"
+              return<>
+                <Typography sx={{fontSize: "1.5rem", fontWeight: 700 }} variant="h2">{text}</Typography>
+                <ExperienceContent key={render.id} element={render} />
+              </>
+              }
+            return <ExperienceContent key={render.id} element={render} />;
+          }
+        });
+      });
+      const left = cv.order.left.map((el) => {
+        const pages = leftPages[el][page];
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+        if (!pages) return null;
+
+        return <section className={styles[el]} >{
+          pages.map((index) => {
+          const render = cv[el][index];
+
+          if (render.type === "personalDetails") {
+            return <PersonalDetailsContent key={render.id} element={render} />;
+          } else {
+            if( index === 0){
+                        return <>
+                            <Typography variant="h2">Skills</Typography>
+                            <SkillContent skill={render} />
+                        </>
+                    }
+            return <SkillContent key={render.id} skill={render} />;
+          }
+        })
+          }</section> 
+      });
     return(
         <>
        
@@ -77,10 +114,16 @@ export default function Preview(){
               
             <div className={styles.preview}>
               <div className={styles.left}>
-                <PersonalDetailsContent element={cv.personalDetails} />
+                <section>
+                  {left}
+                </section>
+                
               </div>        
               <div className={styles.right}>
-                {right}
+                <section>
+                  {right}
+                </section>
+                
               </div>
             </div>
             

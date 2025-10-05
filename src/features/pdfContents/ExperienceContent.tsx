@@ -6,13 +6,12 @@ interface Props{
 }
 
 export default function ExperienceContent({element}: Props){
+    const firstLine = [element.tittel, element.institusjon, element.by]
 
-    return(<div>
-                <Typography>{element.tittel}</Typography>
-                <Typography>{element.institusjon}</Typography>
+    return(<section>
+                <Typography sx={{fontWeight:700, fontSize:"0.9rem"}} >{firstLine.filter(el=>el).join(", ")}</Typography>
                 <Typography>{element.fra}</Typography>
                 <Typography>{element.til}</Typography>
-                <Typography>{element.by}</Typography>
-                <Typography>{element.beskrivelse}</Typography>
-            </div>)
+                <Typography sx={{fontSize:"0.9rem"}}>{element.beskrivelse}</Typography>
+            </section>)
 } 

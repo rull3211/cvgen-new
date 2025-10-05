@@ -13,8 +13,8 @@ type PaginationState = {
 
 export const usePagination = create<PaginationState>((set) => ({
   pageNumber: 0,
-  leftPages: {personalDetails:{0:[]}}as Record<LeftOrder,Record<number,Array<number>>>,
-  rightPages: {education:{0:[]},workExperience:{0:[]},} as Record<RightOrder,Record<number,Array<number>>>,
+  leftPages: {personalDetails:{0:[]}, skills:{0:[]}}as Record<LeftOrder,Record<number,Array<number>>>,
+  rightPages: {summary:{0:[]}, education:{0:[]},workExperience:{0:[]},} as Record<RightOrder,Record<number,Array<number>>>,
   setLeftPages: (pages) => set({ leftPages: pages }),
   setRightPages: (pages) => set({ rightPages: pages }),
   resetPages: () => set({ leftPages: {} as Record<LeftOrder,Record<number,Array<number>>>, rightPages: {} as Record<RightOrder,Record<number,Array<number>>>}),

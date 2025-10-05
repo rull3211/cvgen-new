@@ -1,0 +1,24 @@
+import LabelWrapper from "../components/LabelWrapper";
+import { useCv } from "@/hooks/useCv";
+import DebouncedTextField from "@/components/debouncedTextfield/DebouncedTextField";
+
+export default function SummaryEditor(){
+    const cv = useCv()
+    return (<section>
+        {cv.summary.map(summary =>{
+            return(
+                <LabelWrapper key={summary.id} label={"Oppsummering"}>
+                    <DebouncedTextField  
+                        onChange={el=>cv.updateSummary( "content", el.target.value, summary.id)} 
+                        value={summary.content} 
+                        fullWidth 
+                        rows={7} 
+                        multiline
+                    />
+            </LabelWrapper>
+            )
+        })}
+        
+    </section>)
+
+}

@@ -2,6 +2,8 @@ import { useEffect, useRef,  } from "react";
 import styles from "../preview/PreviewStyles.module.scss";
 import ExperienceContent from "../pdfContents/ExperienceContent";
 import PersonalDetailsContent from "../pdfContents/PersonalDetailsContent";
+import SummaryContent from "../pdfContents/SummaryContent";
+import SkillContent from "../pdfContents/SkillsContent";
 import type {CvState} from "@/hooks/useCv";
 import { usePagination } from "@/hooks/usePagination";
 import {    useCv } from "@/hooks/useCv";
@@ -11,10 +13,10 @@ export default function PDFPagination() {
   const leftRef = useRef<HTMLDivElement | null>(null);
   const rightRef = useRef<HTMLDivElement | null>(null);
   const cv = useCv()
-  const { setLeftPages, setRightPages, pageNumber, setPageNumber, rightPages} = usePagination();
+  const { setLeftPages, setRightPages, pageNumber, setPageNumber} = usePagination();
 
  function paginate(container: HTMLDivElement, side: keyof CvState["order"]) {
-  const maxHeight = 1129;
+  const maxHeight = 1127*0.8;
   const children = Array.from(container.children) as Array<HTMLDivElement>;
   const pagesOrder: Record<string, Record<number, Array<number>>> = {};
   let currentPageNumber = 0;
@@ -31,13 +33,10 @@ export default function PDFPagination() {
       const h = el.getBoundingClientRect().height || el.offsetHeight || 0;
       return Math.round(h);
     });
-
+    
     const tempPages: Record<number, Array<number>> = {};
     let currentPage: Array<number> = [];
-
     heights.forEach((itemHeight, idx) => {
-      
-
       if (currentHeight + itemHeight > maxHeight) {
         if (currentPage.length > 0) tempPages[currentPageNumber] = currentPage;
         currentPageNumber++;
@@ -48,7 +47,7 @@ export default function PDFPagination() {
         currentHeight += itemHeight;
       }
     });
-
+    
     if (currentPage.length > 0) tempPages[currentPageNumber] = currentPage;
     pagesOrder[sectionName] = tempPages;
 
@@ -59,7 +58,7 @@ export default function PDFPagination() {
 }
   const measurePages = () => {
     if (rightRef.current) setRightPages(paginate(rightRef.current, "right"));
-    if (leftRef.current) setLeftPages(paginate(leftRef.current, "right"));
+    if (leftRef.current) setLeftPages(paginate(leftRef.current, "left"));
   };
 
   // Observe column changes and re-paginate
@@ -88,16 +87,27 @@ export default function PDFPagination() {
         }}
         aria-hidden
       >
-        <div ref={leftRef} className={styles.left}>
-         <PersonalDetailsContent element={cv.personalDetails} />
+        <div ref={leftRef} className={`${styles.left} ${styles.calc}`} >
+          {cv.order.left.map(orderElement => {
+            return <section key={orderElement+"paginate"}>{
+              cv[orderElement].map(elementToRender =>{
+                if(elementToRender.type === "personalDetails")return<PersonalDetailsContent element={elementToRender} />
+                return <SkillContent skill={elementToRender} />
+              })
+              }</section>
+          })}
+         
+         
         </div>
-        <div ref={rightRef} className={styles.right}>
+        <div ref={rightRef} className={`${styles.right} ${styles.calc}`}>
           {
             cv.order.right.map(field =>{ 
               return <section key={field+"paginate"}>{
-                (cv[field].map((el, i) => (
-                        <ExperienceContent key={el.id} element={el} />)))}</section>
-              })
+                  cv[field].map((el, i) => {
+                    if(el.type === "summary")return <SummaryContent text={el.content}/>
+                    return<ExperienceContent key={el.id} element={el} />
+                  })}</section>
+                })
           }
           
         </div>

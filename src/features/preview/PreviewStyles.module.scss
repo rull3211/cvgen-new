@@ -5,12 +5,32 @@
 }
 
 .left{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding-top: 4rem;
     flex: 1;
-    background-color: green;
+    background-color: #295b42;
+    color: white;
+    gap: 2rem;
+    >section{
+        gap: 2rem;
+        display: flex;
+        flex-direction: column;
+    }
 }
 .right{
     flex:2.1;
-    background-color: red;
+    background-color: white;
+    >section{
+        padding: 10% 5% 0% 10%;
+        display: flex;
+        flex-direction: column;
+        >section{
+            margin-bottom: 1rem;
+        }
+    }
 }
 
 .page {
@@ -21,4 +41,63 @@
   box-shadow: 0 0 5px rgba(0,0,0,0.1);
 
   /* For printing */
+}
+
+
+.calc{
+    height: fit-content;
+}
+
+.tittel{
+    display: flex;
+    gap: 1rem;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 2rem;
+    >p{
+       font-size: 0.8rem; 
+    }
+    
+    >h2{
+        font-size: 1.2rem;
+        font-weight: 600
+    }
+    >span{
+        width: 1rem;
+        display: block;
+        border-bottom: 1px solid white;
+    }
+    
+}
+
+.details{
+    display: flex;
+    flex-direction: column;
+    align-items: start;
+
+    >h2{
+        font-size: 1rem;
+        font-weight: 700;
+        margin-bottom: 0.8rem;
+    }
+    >p{
+        font-size: 0.8rem;
+        margin-bottom: 0.2rem;
+    }
+}
+
+.skills{
+    display: flex;
+    flex-direction: column;
+    align-items: start;
+    >h2{
+        font-size: 1.1rem;
+        font-weight: 700;
+        margin-bottom: 0.8rem;
+    }
+    >p{
+        font-size: 0.8rem;
+        margin-bottom: 0.2rem;
+        
+    }
 }

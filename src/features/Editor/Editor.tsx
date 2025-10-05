@@ -3,12 +3,15 @@ import { Button } from "@mui/material"
 import Experience from "./components/Experience"
 import styles from "./editor.module.scss"
 import PersoalDetails from "./components/PersonalDetails"
+import SummaryEditor from "./summary/Summary"
+import SkillsEditor from "./SkillsEditor/SkillsEditor"
 import { useCv } from "@/hooks/useCv"
 
 export default function Editor(){
     const cvState = useCv()
-
     return <section className={styles.editor}>
+         <Button onClick={()=>cvState.addSkill()}>AddSkill</Button>
+        <SkillsEditor/>
         <PersoalDetails></PersoalDetails>
         <Button onClick={()=>cvState.addWorkExperience("workExperience")}>Add experience</Button>
         {cvState.workExperience.map(el=>
@@ -18,5 +21,7 @@ export default function Editor(){
         {cvState.education.map(el=>
             <Experience type="education" id={el.id} key={el.id}  label1="Studie" label2="Institusjon" label3="Fra - til" label4="By" label5="Beskrivelse"></Experience>
         )}
+        <SummaryEditor/>
+       
     </section>
 }
