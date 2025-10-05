@@ -1,4 +1,4 @@
-import { TextField } from '@mui/material';
+
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
@@ -6,6 +6,7 @@ import styles from "../editor.module.scss"
 import LabelWrapper from './LabelWrapper';
 import type {CvState, ExperienceKey} from '@/hooks/useCv';
 import {  useCv } from '@/hooks/useCv';
+import DebouncedTextField from '@/components/debouncedTextfield/DebouncedTextField';
 
 interface Props{
     label1:string
@@ -23,10 +24,9 @@ export default function Experience(props:Props){
     return <LocalizationProvider dateAdapter={AdapterDayjs}>
         <section className={styles.experience}>
             <section className={styles.row}>
-                <LabelWrapper label={props.label1}><TextField onChange={el=>{
-                    console.log(el.target.value)
+                <LabelWrapper label={props.label1}><DebouncedTextField onChange={el=>{
                     cv.updateWorkExperience(props.type, "tittel", el.target.value, props.id )}} value={workExperience?.tittel} fullWidth/></LabelWrapper>
-                <LabelWrapper label={props.label2}><TextField onChange={el=>cv.updateWorkExperience(props.type, "institusjon", el.target.value, props.id )} value={workExperience?.institusjon} fullWidth/></LabelWrapper>
+                <LabelWrapper label={props.label2}><DebouncedTextField onChange={el=>cv.updateWorkExperience(props.type, "institusjon", el.target.value, props.id )} value={workExperience?.institusjon} fullWidth/></LabelWrapper>
             </section>
            
            <section className={styles.row}>
@@ -37,10 +37,10 @@ export default function Experience(props:Props){
                     </section>
                     
                 </LabelWrapper>
-             <LabelWrapper label={props.label4}><TextField onChange={el=>cv.updateWorkExperience(props.type, "by", el.target.value, props.id )} value={workExperience?.by} fullWidth/></LabelWrapper>
+             <LabelWrapper label={props.label4}><DebouncedTextField onChange={el=>cv.updateWorkExperience(props.type, "by", el.target.value, props.id )} value={workExperience?.by} fullWidth/></LabelWrapper>
            </section>
            <section className={styles.row}>
-            <LabelWrapper label={props.label5}><TextField  onChange={el=>cv.updateWorkExperience(props.type, "beskrivelse", el.target.value, props.id )} value={workExperience?.beskrivelse} fullWidth rows={7} multiline/></LabelWrapper>
+            <LabelWrapper label={props.label5}><DebouncedTextField  onChange={el=>cv.updateWorkExperience(props.type, "beskrivelse", el.target.value, props.id )} value={workExperience?.beskrivelse} fullWidth rows={7} multiline/></LabelWrapper>
            </section>
             
         </section>
