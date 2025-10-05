@@ -2,6 +2,8 @@ import { Box, Button, Typography } from "@mui/material";
 import { useEffect, useRef, useState } from "react";
 import PDFPagination from "../paginatedTest/PaginatedApp";
 import Export from "../exportContainer/Export";
+import ExperienceContent from "../pdfContents/ExperienceContent";
+import PersonalDetailsContent from "../pdfContents/PersonalDetailsContent";
 import styles from "./PreviewStyles.module.scss"
 import { a4Height, a4HeightInCm, a4WidthInCm, a4width } from "@/constants";
 import { useCv } from "@/hooks/useCv";
@@ -12,12 +14,12 @@ import { usePagination } from "@/hooks/usePagination";
 
 
 export default function Preview(){
-   const { leftPages, rightPages} = usePagination();
+   const { leftPages, rightPages, pageNumber} = usePagination();
+   const numberOfPages = pageNumber+1
   const [page, setPage] = useState(0)
   const [startExport, setExport] = useState(false)
   function handlePageAction(num:number){
-    const length = Math.max(leftPages.length, rightPages.length)
-    setPage((page + num + length) % length);
+    setPage((page + num + numberOfPages) % numberOfPages);
   }
      const exportPreview = () => {
         if (!previewRef.current) return;
@@ -45,7 +47,16 @@ export default function Preview(){
     const vh = window.innerHeight;
     const scale = Math.min(1, Math.min(vw / a4WidthInCm, vh / a4HeightInCm)*0.9);
     const cv = useCv()
-
+    const right = cv.order.right.map(el => {
+          const pages = rightPages[el][page]
+          // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+          if(pages === undefined) return null
+          return pages.map(index => {
+              const render = cv[el][index]
+              return <ExperienceContent key={render.id} element={render} />
+          })
+          
+      })
     return(
         <>
        
@@ -66,42 +77,19 @@ export default function Preview(){
               
             <div className={styles.preview}>
               <div className={styles.left}>
-                {leftPages[page]?.map((rowIndex) =>{ 
-                
-                const el = cv.education[rowIndex]
-                return(
-                  <div key={rowIndex}>
-                    <Typography>{el.tittel}</Typography>
-                    <Typography>{el.institusjon}</Typography>
-                    <Typography>{el.fra}</Typography>
-                    <Typography>{el.til}</Typography>
-                    <Typography>{el.by}</Typography>
-                    <Typography>{el.beskrivelse}</Typography>
-                  </div>
-                )})}
+                <PersonalDetailsContent element={cv.personalDetails} />
               </div>        
               <div className={styles.right}>
-                {rightPages[page]?.map((rowIndex) => {
-                    const el = cv.workExperience[rowIndex]
-                    return(
-                  <div key={rowIndex}>
-                    <Typography>{el.tittel}</Typography>
-                    <Typography>{el.institusjon}</Typography>
-                    <Typography>{el.fra}</Typography>
-                    <Typography>{el.til}</Typography>
-                    <Typography>{el.by}</Typography>
-                    <Typography>{el.beskrivelse}</Typography>
-                    </div>
-                )})}
+                {right}
               </div>
             </div>
             
                      
             </Box>
             <section style={{display: "flex"}}>
-               <Button disabled={Math.max(leftPages.length, rightPages.length) ===1} onClick={()=>handlePageAction(-1)}>Prev</Button>
-              <Typography>{page+1}/{Math.max(leftPages.length, rightPages.length)}</Typography>
-              <Button disabled={Math.max(leftPages.length, rightPages.length) ===1} onClick={()=>handlePageAction(+1)}>Next</Button>
+               <Button disabled={numberOfPages ===1} onClick={()=>handlePageAction(-1)}>Prev</Button>
+              <Typography>{page+1}/{numberOfPages}</Typography>
+              <Button disabled={numberOfPages ===1} onClick={()=>handlePageAction(+1)}>Next</Button>
             </section>
            
         </div>

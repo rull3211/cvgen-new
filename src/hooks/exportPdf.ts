@@ -23,7 +23,6 @@ export async function exportPDF(html: string, css:string) {
     document.body.removeChild(a);
     window.URL.revokeObjectURL(url);
 
-    console.log("PDF downloaded successfully!");
   } catch (err) {
     console.error("Error exporting PDF:", err);
   }

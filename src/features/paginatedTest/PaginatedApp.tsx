@@ -1,30 +1,46 @@
-import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
-import { Typography } from "@mui/material";
+import { useEffect, useRef,  } from "react";
 import styles from "../preview/PreviewStyles.module.scss";
+import ExperienceContent from "../pdfContents/ExperienceContent";
+import PersonalDetailsContent from "../pdfContents/PersonalDetailsContent";
+import type {CvState} from "@/hooks/useCv";
 import { usePagination } from "@/hooks/usePagination";
-import { useCv } from "@/hooks/useCv";
+import {    useCv } from "@/hooks/useCv";
 
 
 export default function PDFPagination() {
   const leftRef = useRef<HTMLDivElement | null>(null);
   const rightRef = useRef<HTMLDivElement | null>(null);
-   const cv = useCv()
-  const { setLeftPages, setRightPages } = usePagination();
+  const cv = useCv()
+  const { setLeftPages, setRightPages, pageNumber, setPageNumber, rightPages} = usePagination();
 
-  const paginate = (container: HTMLDivElement): Array<Array<number>> => {
-    const maxHeight = 1129;
-    const children = Array.from(container.children) as Array<HTMLDivElement>;
+ function paginate(container: HTMLDivElement, side: keyof CvState["order"]) {
+  const maxHeight = 1129;
+  const children = Array.from(container.children) as Array<HTMLDivElement>;
+  const pagesOrder: Record<string, Record<number, Array<number>>> = {};
+  let currentPageNumber = 0;
+  let currentHeight = 0;
+  container.getBoundingClientRect();
+  cv.order[side].forEach((sectionName, sectionIndex) => {
+    const section = children[sectionIndex];
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    if (!section) return;
 
-    const tempPages: Array<Array<number>> = [];
+    const items = Array.from(section.children) as Array<HTMLDivElement>;
+    const heights = items.map(el => {
+
+      const h = el.getBoundingClientRect().height || el.offsetHeight || 0;
+      return Math.round(h);
+    });
+
+    const tempPages: Record<number, Array<number>> = {};
     let currentPage: Array<number> = [];
-    let currentHeight = 0;
 
-    children.forEach((child) => {
-      const itemHeight = child.getBoundingClientRect().height;
-      const idx = Number(child.dataset.index);
-        console.log(currentHeight + itemHeight)
+    heights.forEach((itemHeight, idx) => {
+      
+
       if (currentHeight + itemHeight > maxHeight) {
-        tempPages.push(currentPage);
+        if (currentPage.length > 0) tempPages[currentPageNumber] = currentPage;
+        currentPageNumber++;
         currentPage = [idx];
         currentHeight = itemHeight;
       } else {
@@ -33,19 +49,21 @@ export default function PDFPagination() {
       }
     });
 
-    if (currentPage.length > 0) tempPages.push(currentPage);
+    if (currentPage.length > 0) tempPages[currentPageNumber] = currentPage;
+    pagesOrder[sectionName] = tempPages;
 
-    return tempPages;
-  };
+  });
+  if (currentPageNumber > pageNumber) setPageNumber(currentPageNumber);
 
+  return pagesOrder;
+}
   const measurePages = () => {
-    if (leftRef.current) setLeftPages(paginate(leftRef.current));
-    if (rightRef.current) setRightPages(paginate(rightRef.current));
+    if (rightRef.current) setRightPages(paginate(rightRef.current, "right"));
+    if (leftRef.current) setLeftPages(paginate(leftRef.current, "right"));
   };
 
   // Observe column changes and re-paginate
   useEffect(() => {
-    measurePages();
 
     const observer = new ResizeObserver(() => measurePages());
     if (leftRef.current) observer.observe(leftRef.current);
@@ -71,30 +89,17 @@ export default function PDFPagination() {
         aria-hidden
       >
         <div ref={leftRef} className={styles.left}>
-          
+         <PersonalDetailsContent element={cv.personalDetails} />
         </div>
         <div ref={rightRef} className={styles.right}>
-          { cv.workExperience.map((el, i) => (
-            <div key={el.id} data-index={i}>
-                <Typography>{el.tittel}</Typography>
-                <Typography>{el.institusjon}</Typography>
-                <Typography>{el.fra}</Typography>
-                <Typography>{el.til}</Typography>
-                <Typography>{el.by}</Typography>
-                <Typography>{el.beskrivelse}</Typography>
-
-            </div>
-          ))}
-          {cv.education.map((el, i) => (
-            <div key={i} data-index={i}>
-                <Typography>{el.tittel}</Typography>
-                <Typography>{el.institusjon}</Typography>
-                <Typography>{el.fra}</Typography>
-                <Typography>{el.til}</Typography>
-                <Typography>{el.by}</Typography>
-                <Typography>{el.beskrivelse}</Typography>
-            </div>
-          ))}
+          {
+            cv.order.right.map(field =>{ 
+              return <section key={field+"paginate"}>{
+                (cv[field].map((el, i) => (
+                        <ExperienceContent key={el.id} element={el} />)))}</section>
+              })
+          }
+          
         </div>
       </div>
       

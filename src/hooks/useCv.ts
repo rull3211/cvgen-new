@@ -3,10 +3,13 @@ import {create} from "zustand"
 import { combine } from 'zustand/middleware'
 import {produce} from "immer";
 
+export type RightOrder = keyof Pick<CvState,"education"|"workExperience">
+export type LeftOrder = keyof Pick<CvState,"personalDetails">
 export interface CvState {
     workExperience: Array<Experience>
     education: Array<Experience>
     personalDetails: PersonalDetails
+    order:{left: Array<LeftOrder>, right:Array<RightOrder>}
 }
 
 export interface Experience {
@@ -60,7 +63,8 @@ export const useCv = create(
     {
       workExperience: [createEmptyWorkExperience()],
       education: [createEmptyWorkExperience()],
-      personalDetails: createEmptyPersonalDetails()
+      personalDetails: createEmptyPersonalDetails(),
+      order:{left:["personalDetails", ], right:["workExperience","education"]}
     } as CvState,
     (set) => ({
       addWorkExperience: (experience: ExperienceKey) =>

@@ -56,7 +56,7 @@ export default function DraggableList({ children }: ListProps) {
 
   return (
     <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-      <SortableContext items={items.map((i) => { console.log(i)
+      <SortableContext items={items.map((i) => { 
         
         return i.id})} strategy={verticalListSortingStrategy}>
         <List sx={{ width: 300 }}>
