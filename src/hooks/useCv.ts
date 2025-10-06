@@ -89,6 +89,7 @@ export const useCv = create(
       skills:[{type:"skill", content:"", id: crypto.randomUUID(), level:"1"}]
     } as CvState,
     (set) => ({
+      setState: (newState: CvState) => set(() => newState),
       addWorkExperience: (experience: ExperienceKey) =>
         set((state) => ({
           [experience]: [...state[experience], createEmptyExperience("workExperience")],
