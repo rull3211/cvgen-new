@@ -103,7 +103,7 @@ export default function PDFPagination() {
           {
             cv.order.right.map(field =>{ 
               return <section key={field+"paginate"}>{
-                  cv[field].map((el, i) => {
+                  cv[field].map((el) => {
                     if(el.type === "summary")return <SummaryContent text={el.content}/>
                     return<ExperienceContent key={el.id} element={el} />
                   })}</section>
