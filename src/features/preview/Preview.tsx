@@ -6,6 +6,7 @@ import ExperienceContent from "../pdfContents/ExperienceContent";
 import PersonalDetailsContent from "../pdfContents/PersonalDetailsContent";
 import SummaryContent from "../pdfContents/SummaryContent";
 import SkillContent from "../pdfContents/SkillsContent";
+import ExportCv from "../exportContainer/ExportCv";
 import styles from "./PreviewStyles.module.scss"
 import { a4Height, a4HeightInCm, a4WidthInCm, a4width } from "@/constants";
 import {  useCv } from "@/hooks/useCv";
@@ -56,7 +57,6 @@ export default function Preview(){
         
         return pages.map((index) => {
           const render = cv[el][index];
-          console.log(render)
           if (render.type === "summary") {
             return <SummaryContent key={render.id} text={render.content} />;
           } else {
@@ -85,7 +85,7 @@ export default function Preview(){
           } else {
             if( index === 0){
                         return <>
-                            <Typography variant="h2">Skills</Typography>
+                            <Typography variant="h2">Ferdigheter</Typography>
                             <SkillContent skill={render} />
                         </>
                     }
@@ -96,7 +96,7 @@ export default function Preview(){
       });
     return(
         <>
-       
+        <ExportCv></ExportCv>
         <Button onClick={()=>{setExport(true)}}>Eksporter</Button>
          {startExport&&<Export ref={previewRef}></Export>}
         <div style={{transform: `scale(${scale})`,transformOrigin: "top left"}}>

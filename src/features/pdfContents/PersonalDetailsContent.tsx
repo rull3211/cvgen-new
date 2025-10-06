@@ -17,7 +17,7 @@ export default function PersonalDetailsContent({element}: Props){
                 <Typography>{element.jobbtittel}</Typography> 
             </section>
             <section className={style.details}>
-              {hasDetails && <Typography variant="h2">Details</Typography>}
+              {hasDetails && <Typography variant="h2">Detaljer</Typography>}
                 <Typography>{adresse}</Typography>
                 <Typography>{by}</Typography>
                 <Typography>{land}</Typography>

@@ -10,8 +10,7 @@ export default function ExperienceContent({element}: Props){
 
     return(<section>
                 <Typography sx={{fontWeight:700, fontSize:"0.9rem"}} >{firstLine.filter(el=>el).join(", ")}</Typography>
-                <Typography>{element.fra}</Typography>
-                <Typography>{element.til}</Typography>
+                <Typography sx={{fontSize: "0.7rem", opacity:"60%"}}>{element.fra} { element.fra && " - "} {!element.til && element.fra ? "Dags dato": element.til}</Typography>
                 <Typography sx={{fontSize:"0.9rem"}}>{element.beskrivelse}</Typography>
             </section>)
 } 

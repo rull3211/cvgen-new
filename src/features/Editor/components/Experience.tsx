@@ -7,6 +7,7 @@ import LabelWrapper from './LabelWrapper';
 import type {CvState, ExperienceKey} from '@/hooks/useCv';
 import {  useCv } from '@/hooks/useCv';
 import DebouncedTextField from '@/components/debouncedTextfield/DebouncedTextField';
+import { StringDatePicker } from '@/components/datePicker/StringDatepicker';
 
 interface Props{
     label1:string
@@ -32,8 +33,8 @@ export default function Experience(props:Props){
            <section className={styles.row}>
                 <LabelWrapper label={props.label3} >
                     <section className={styles.date}>
-                        <DatePicker slots={{openPickerIcon:()=>null}} format='MM/YYYY' views={['month', 'year']} />
-                        <DatePicker slots={{openPickerIcon:()=>null}} format='MM/YYYY' views={['month', 'year']} />
+                        <StringDatePicker slots={{ openPickerIcon: () => null }} format='MMM YYYY' views={['month', 'year']} value={workExperience?.fra || ""} onChange={(el)=>{cv.updateWorkExperience(props.type, "fra", el||"", props.id)}} />
+                        <StringDatePicker slots={{ openPickerIcon: () => null }} format='MMM YYYY' views={['month', 'year']} value={workExperience?.til || ""} onChange={(el)=>{cv.updateWorkExperience(props.type, "til", el||"", props.id)}} />
                     </section>
                     
                 </LabelWrapper>
