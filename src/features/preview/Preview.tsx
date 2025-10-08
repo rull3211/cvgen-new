@@ -96,8 +96,7 @@ export default function Preview(){
       });
     return(
         <>
-        <ExportCv></ExportCv>
-        <Button onClick={()=>{setExport(true)}}>Eksporter</Button>
+        
          {startExport&&<Export ref={previewRef}></Export>}
         <div style={{transform: `scale(${scale})`,transformOrigin: "top left"}}>
           
@@ -130,9 +129,15 @@ export default function Preview(){
                      
             </Box>
             <section style={{display: "flex"}}>
-               <Button disabled={numberOfPages ===1} onClick={()=>handlePageAction(-1)}>Prev</Button>
-              <Typography>{page+1}/{numberOfPages}</Typography>
-              <Button disabled={numberOfPages ===1} onClick={()=>handlePageAction(+1)}>Next</Button>
+              <Box sx={{display:"flex"}}>
+                <Button disabled={numberOfPages ===1} onClick={()=>handlePageAction(-1)}>Prev</Button>
+                <Typography>{page+1}/{numberOfPages}</Typography>
+                <Button disabled={numberOfPages ===1} onClick={()=>handlePageAction(+1)}>Next</Button>
+              </Box>
+              
+                <ExportCv></ExportCv>
+              
+              <Button onClick={()=>{setExport(true)}}>Eksporter</Button>
             </section>
            
         </div>
