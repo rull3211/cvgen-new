@@ -12,11 +12,11 @@ import './styles.css'
 import App from './App.tsx'
 import Editor from './features/Editor/Editor.tsx'
 import Preview from './features/preview/Preview.tsx'
+import { Box } from '@mui/material'
 
 const rootRoute = createRootRoute({
-  
   component: () => (
-    <main style={{display: "flex"}}>
+    <main style={{ display: 'flex', justifyContent: 'space-around' }}>
       <Editor></Editor>
       <Preview></Preview>
     </main>
@@ -55,5 +55,3 @@ if (rootElement && !rootElement.innerHTML) {
     </StrictMode>,
   )
 }
-
-

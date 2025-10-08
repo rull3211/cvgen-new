@@ -1,18 +1,31 @@
-import { Box, FormControl, InputLabel } from '@mui/material';
+import {
+  Box,
+  FormControl,
+  InputLabel,
+  type FormControlProps,
+} from '@mui/material'
 
-interface LabelWrapperProps {
-  label: string;
-  children: React.ReactNode;
-  className?: string;
+interface LabelWrapperProps extends FormControlProps {
+  label: string
+  children: React.ReactNode
+  className?: string
 }
 
-export default function LabelWrapper({ label, children, className }: LabelWrapperProps) {
+export default function LabelWrapper({
+  label,
+  children,
+  className,
+  ...rest
+}: LabelWrapperProps) {
   return (
-    <FormControl className={className} fullWidth>
+    <FormControl
+      sx={{ marginTop: '0.7rem' }}
+      {...rest}
+      className={className}
+      fullWidth
+    >
       <InputLabel shrink>{label}</InputLabel>
-      <Box mt={1}>
-        {children}
-      </Box>
+      <Box mt={1}>{children}</Box>
     </FormControl>
-  );
+  )
 }
