@@ -1,3 +1,4 @@
+import { Box, Button, Input } from "@mui/material";
 import { useCv } from "@/hooks/useCv";
 
 const ExportCv = () => {
@@ -56,15 +57,17 @@ const ExportCv = () => {
 };
 
   return (
-    <div>
-      <button onClick={handleDownload}>Download Zustand State</button>
-      <input
+    <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+      <Button variant="contained" onClick={handleDownload}>
+        Download Zustand State
+      </Button>
+
+      <Input
         type="file"
-        accept="application/json"
+        inputProps={{ accept: "application/json" }}
         onChange={handleUpload}
-        style={{ marginLeft: "10px" }}
       />
-    </div>
+    </Box>
   );
 };
 
