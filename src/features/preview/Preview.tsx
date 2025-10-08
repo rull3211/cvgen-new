@@ -15,7 +15,7 @@ import { usePagination } from '@/hooks/usePagination'
 
 export default function Preview() {
   const { leftPages, rightPages, pageNumber } = usePagination()
-  const numberOfPages = pageNumber + 1
+  const numberOfPages = Math.max(pageNumber.left, pageNumber.right) + 1
   const [page, setPage] = useState(0)
   const [startExport, setExport] = useState(false)
   function handlePageAction(num: number) {

@@ -13,9 +13,7 @@ export default function PDFPagination() {
   const leftRef = useRef<HTMLDivElement | null>(null)
   const rightRef = useRef<HTMLDivElement | null>(null)
   const cv = useCv()
-  const { setLeftPages, setRightPages, pageNumber, setPageNumber } =
-    usePagination()
-
+  const { setLeftPages, setRightPages, setPageNumber } = usePagination()
   function paginate(container: HTMLDivElement, side: keyof CvState['order']) {
     const vw = window.innerWidth
     const vh = window.innerHeight
@@ -44,13 +42,11 @@ export default function PDFPagination() {
       let currentPage: Array<number> = []
       heights.forEach((itemHeight, idx) => {
         if (currentHeight + itemHeight > maxHeight) {
-          console.log(itemHeight)
           if (currentPage.length > 0) tempPages[currentPageNumber] = currentPage
           currentPageNumber++
           currentPage = [idx]
           currentHeight = itemHeight
         } else {
-          console.log(itemHeight)
           currentPage.push(idx)
           currentHeight += itemHeight
         }
@@ -59,7 +55,7 @@ export default function PDFPagination() {
       if (currentPage.length > 0) tempPages[currentPageNumber] = currentPage
       pagesOrder[sectionName] = tempPages
     })
-    if (currentPageNumber > pageNumber) setPageNumber(currentPageNumber)
+    setPageNumber(side, currentPageNumber)
 
     return pagesOrder
   }
