@@ -60,6 +60,7 @@
   align-items: center;
   margin-bottom: 2rem;
   > p {
+    white-space: 'pre-wrap';
     font-size: 0.8rem;
   }
 
@@ -85,6 +86,7 @@
     margin-bottom: 0.8rem;
   }
   > p {
+    white-space: 'pre-wrap';
     font-size: 0.8rem;
     margin-bottom: 0.2rem;
   }

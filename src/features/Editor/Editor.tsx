@@ -26,7 +26,9 @@ export default function Editor() {
       <ClosableTab header={'Personalia'}>
         <PersoalDetails />
       </ClosableTab>
-
+      <ClosableTab header={'Oppsummering'}>
+        <SummaryEditor />
+      </ClosableTab>
       <ClosableTab
         sx={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}
         header="Arbeidserfaring"
@@ -94,9 +96,6 @@ export default function Editor() {
         </Button>
       </ClosableTab>
       <SkillsEditor />
-      <ClosableTab header={'Oppsummering'}>
-        <SummaryEditor />
-      </ClosableTab>
     </Box>
   )
 }
