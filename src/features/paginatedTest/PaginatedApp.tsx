@@ -95,8 +95,18 @@ export default function PDFPagination() {
               <section key={orderElement + 'paginate'}>
                 {cv[orderElement].map((elementToRender) => {
                   if (elementToRender.type === 'personalDetails')
-                    return <PersonalDetailsContent element={elementToRender} />
-                  return <SkillContent skill={elementToRender} />
+                    return (
+                      <PersonalDetailsContent
+                        key={elementToRender.id + '-paginator'}
+                        element={elementToRender}
+                      />
+                    )
+                  return (
+                    <SkillContent
+                      key={elementToRender.id + '-paginator'}
+                      skill={elementToRender}
+                    />
+                  )
                 })}
               </section>
             )
@@ -108,8 +118,15 @@ export default function PDFPagination() {
               <section key={field + 'paginate'}>
                 {cv[field].map((el) => {
                   if (el.type === 'summary')
-                    return <SummaryContent text={el.content} />
-                  return <ExperienceContent key={el.id} element={el} />
+                    return (
+                      <SummaryContent
+                        key={el.id + '-paginator'}
+                        text={el.content}
+                      />
+                    )
+                  return (
+                    <ExperienceContent key={el.id + 'paginator'} element={el} />
+                  )
                 })}
               </section>
             )

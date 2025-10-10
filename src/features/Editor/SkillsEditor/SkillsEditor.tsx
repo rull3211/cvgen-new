@@ -18,8 +18,9 @@ export default function SkillsEditor() {
       >
         {cv.skills.map((skill) => {
           return (
-            <LabelWrapper key={skill.id} label={'Ferdigheter'}>
+            <LabelWrapper id={skill.id} key={skill.id} label={'Ferdigheter'}>
               <DebouncedTextField
+                id={skill.id}
                 onChange={(el) =>
                   cv.updateSkills('content', el.target.value, skill.id)
                 }

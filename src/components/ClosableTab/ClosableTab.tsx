@@ -26,9 +26,9 @@ export default function ClosableTab({ header, children, ...rest }: Props) {
         }}
         component={'section'}
       >
-        <Typography sx={{ fontWeight: 700, fontSize: '1.5rem' }}>
+        <Box component={'div'} sx={{ fontWeight: 700, fontSize: '1.5rem' }}>
           {header}
-        </Typography>
+        </Box>
         <IconButton onClick={() => setOpen(!isOpen)}>
           <ExpandLessIcon
             sx={{

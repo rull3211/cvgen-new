@@ -43,6 +43,7 @@ export default function Preview() {
   useEffect(() => {
     if (startExport) exportPreview()
   }, [startExport])
+
   const previewRef = useRef<HTMLDivElement>(null)
   const vw = window.innerWidth
   const vh = window.innerHeight
@@ -61,17 +62,16 @@ export default function Preview() {
         if (index === 0) {
           const text =
             render.type === 'workExperience' ? 'Arbeidserfaring' : 'Utdanning'
-          return (
-            <>
-              <Typography
-                sx={{ fontSize: '1.5rem', fontWeight: 700 }}
-                variant="h2"
-              >
-                {text}
-              </Typography>
-              <ExperienceContent key={render.id} element={render} />
-            </>
-          )
+          return [
+            <Typography
+              key={render.type}
+              sx={{ fontSize: '1.5rem', fontWeight: 700 }}
+              variant="h2"
+            >
+              {text}
+            </Typography>,
+            <ExperienceContent key={render.id} element={render} />,
+          ]
         }
         return <ExperienceContent key={render.id} element={render} />
       }
@@ -83,7 +83,7 @@ export default function Preview() {
     if (!pages) return null
 
     return (
-      <section className={styles[el]}>
+      <section key={el} className={styles[el]}>
         {pages.map((index) => {
           const render = cv[el][index]
 
@@ -91,12 +91,12 @@ export default function Preview() {
             return <PersonalDetailsContent key={render.id} element={render} />
           } else {
             if (index === 0) {
-              return (
-                <>
-                  <Typography variant="h2">Ferdigheter</Typography>
-                  <SkillContent skill={render} />
-                </>
-              )
+              return [
+                <Typography key={'ferdigheter'} variant="h2">
+                  Ferdigheter
+                </Typography>,
+                <SkillContent key={render.id} skill={render} />,
+              ]
             }
             return <SkillContent key={render.id} skill={render} />
           }

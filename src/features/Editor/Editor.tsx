@@ -41,6 +41,7 @@ export default function Editor() {
           )
           return (
             <ClosableTab
+              key={el.id + '-editor'}
               sx={{ border: '1px solid  rgba(172, 172, 172, 1)' }}
               header={header}
             >
@@ -71,7 +72,11 @@ export default function Editor() {
             </Box>
           )
           return (
-            <ClosableTab header={header}>
+            <ClosableTab
+              key={el.id + '-Editor'}
+              sx={{ border: '1px solid  rgba(172, 172, 172, 1)' }}
+              header={header}
+            >
               <Experience
                 type="education"
                 id={el.id}
