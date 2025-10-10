@@ -12,7 +12,6 @@ import './styles.css'
 import App from './App.tsx'
 import Editor from './features/Editor/Editor.tsx'
 import Preview from './features/preview/Preview.tsx'
-import { Box } from '@mui/material'
 
 const rootRoute = createRootRoute({
   component: () => (

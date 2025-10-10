@@ -59,7 +59,13 @@ export default function Preview() {
       if (render.type === 'summary') {
         return <SummaryContent key={render.id} text={render.content} />
       } else {
-        if (index === 0) {
+        const { by, tittel, institusjon, fra, til, beskrivelse } = render
+        const renderHasContent =
+          !!by || !!tittel || !!institusjon || !!fra || !!til || !!beskrivelse
+        if (
+          (index === 0 && renderHasContent) ||
+          (index === 0 && cv[el].length > 1)
+        ) {
           const text =
             render.type === 'workExperience' ? 'Arbeidserfaring' : 'Utdanning'
           return [
@@ -90,7 +96,11 @@ export default function Preview() {
           if (render.type === 'personalDetails') {
             return <PersonalDetailsContent key={render.id} element={render} />
           } else {
-            if (index === 0) {
+            console.log(cv[el])
+            if (
+              (index === 0 && render.content) ||
+              (index === 0 && cv[el].length > 1)
+            ) {
               return [
                 <Typography key={'ferdigheter'} variant="h2">
                   Ferdigheter

@@ -1,18 +1,15 @@
 import styles from '../AvatarUpload.module.scss'
 export default function AvatarImage({
   src,
-  className,
+  renderNoImage = true,
 }: {
   src: string
+  renderNoImage?: boolean
   className?: string
 }) {
-  return (
-    <div className={`${styles.avatarpreview}`}>
-      {src ? (
-        <img src={src} alt="Avatar" className={`${styles.avatarimage}`} />
-      ) : (
-        <span className={`${styles.avatarplaceholder}`}>No image</span>
-      )}
-    </div>
+  const img = <img src={src} alt="Avatar" className={`${styles.avatarimage}`} />
+  const fallback = renderNoImage && (
+    <span className={`${styles.avatarplaceholder}`}>No image</span>
   )
+  return src ? img : fallback
 }
