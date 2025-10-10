@@ -1,6 +1,7 @@
 import React, { useState, useCallback } from 'react'
 import Cropper, { type Area } from 'react-easy-crop'
-
+import AvatarImage from './conponents/AvatarImage'
+import styles from './AvatarUpload.module.scss'
 export default function AvatarUpload({
   onChange,
   src,
@@ -103,16 +104,8 @@ export default function AvatarUpload({
       ) : (
         <div className="relative flex flex-col items-center">
           {/* Avatar Preview */}
-          <div className="w-32 h-32 rounded-full bg-gray-200 overflow-hidden flex items-center justify-center">
-            {src ? (
-              <img
-                src={src}
-                alt="Avatar"
-                className="object-cover w-full h-full"
-              />
-            ) : (
-              <span className="text-gray-500 text-sm">No image</span>
-            )}
+          <div className={`${styles.avatarpreview}  `}>
+            <AvatarImage src={src} />
           </div>
 
           {/* Upload Button */}

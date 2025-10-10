@@ -4,17 +4,10 @@ import ExperienceContent from '../pdfContents/ExperienceContent'
 import PersonalDetailsContent from '../pdfContents/PersonalDetailsContent'
 import SummaryContent from '../pdfContents/SummaryContent'
 import SkillContent from '../pdfContents/SkillsContent'
-import { a4Height, a4HeightInCm, a4WidthInCm, a4width } from '@/constants'
+import { a4Height } from '@/constants'
 import { useCv } from '@/hooks/useCv'
 import { usePagination } from '@/hooks/usePagination'
 
-type PageProps = {
-  children: React.ReactNode
-}
-
-const Page = ({ children }: PageProps) => (
-  <div className={styles.page}>{children}</div>
-)
 interface Props {
   ref: React.RefObject<HTMLDivElement | null>
 }
