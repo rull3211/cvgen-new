@@ -1,6 +1,7 @@
-import { Typography } from '@mui/material'
+import { Box, Typography } from '@mui/material'
 import style from '../preview/PreviewStyles.module.scss'
 import type { PersonalDetails } from '@/hooks/useCv'
+import AvatarImage from '../Editor/components/avatarUpload/conponents/AvatarImage'
 
 interface Props {
   element: PersonalDetails
@@ -14,17 +15,9 @@ export default function PersonalDetailsContent({ element }: Props) {
     (hasDetails || !!element.jobbtittel)
   return (
     <section>
-      <div className=" pb-4 relative flex flex-col items-center">
-        {element.image && (
-          <div className="w-25 h-25 rounded-full bg-gray-200 overflow-hidden flex items-center justify-center">
-            <img
-              src={image}
-              alt="Avatar"
-              className="object-cover w-full h-full"
-            />
-          </div>
-        )}
-      </div>
+      <Box component={'section'} className={style.avatarWrapper}>
+        <AvatarImage src={image} renderNoImage={false}></AvatarImage>
+      </Box>
       <section className={style.tittel}>
         <Typography variant="h2">
           {element.fornavn} {element.etternavn}

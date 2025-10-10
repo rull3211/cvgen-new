@@ -32,7 +32,13 @@
     }
   }
 }
-
+.avatarWrapper {
+  height: 6rem;
+  width: 6rem;
+  align-self: center;
+  justify-self: center;
+  margin-bottom: 1rem;
+}
 .page {
   width: 794px; /* A4 width in px (96 DPI) */
   height: 1123px; /* A4 height */

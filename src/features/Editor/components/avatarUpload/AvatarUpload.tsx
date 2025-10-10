@@ -14,7 +14,6 @@ export default function AvatarUpload({
   const [crop, setCrop] = useState({ x: 0, y: 0 })
   const [zoom, setZoom] = useState(1)
 
-  // Handle upload
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
@@ -27,7 +26,6 @@ export default function AvatarUpload({
     setCroppedAreaPixels(croppedPixels)
   }, [])
 
-  // Convert cropped area to circular image
   const createCroppedImage = async () => {
     if (!imageSrc || !croppedAreaPixels) return
     const image = await createImage(imageSrc)
@@ -41,7 +39,6 @@ export default function AvatarUpload({
 
     ctx.drawImage(image, x, y, width, height, 0, 0, width, height)
 
-    // circle mask
     const circleCanvas = document.createElement('canvas')
     circleCanvas.width = width
     circleCanvas.height = height
@@ -55,8 +52,8 @@ export default function AvatarUpload({
     circleCtx.drawImage(canvas, 0, 0)
 
     const croppedDataUrl = circleCanvas.toDataURL('image/jpeg')
-    onChange(croppedDataUrl) // send cropped avatar up
-    setImageSrc(null) // close cropper
+    onChange(croppedDataUrl)
+    setImageSrc(null)
   }
 
   const createImage = (url: string): Promise<HTMLImageElement> =>
@@ -68,10 +65,9 @@ export default function AvatarUpload({
     })
 
   return (
-    <div className="flex flex-col items-center justify-center w-full">
-      {/* If cropping */}
+    <div className={styles.avatarupload}>
       {imageSrc ? (
-        <div className="relative w-64 h-64 bg-gray-900 rounded-xl overflow-hidden">
+        <div className={styles.croppercontainer}>
           <Cropper
             image={imageSrc}
             crop={crop}
@@ -83,7 +79,7 @@ export default function AvatarUpload({
             onZoomChange={setZoom}
             onCropComplete={onCropComplete}
           />
-          <div className="absolute bottom-3 left-0 w-full flex flex-col items-center space-y-2">
+          <div className={styles.croppercontrols}>
             <input
               type="range"
               min={1}
@@ -91,36 +87,29 @@ export default function AvatarUpload({
               step={0.1}
               value={zoom}
               onChange={(e) => setZoom(Number(e.target.value))}
-              className="w-3/4"
+              className={styles.zoomslider}
             />
-            <button
-              onClick={createCroppedImage}
-              className="px-4 py-1 bg-green-500 text-white rounded-md"
-            >
+            <button onClick={createCroppedImage} className={styles.savebutton}>
               Save
             </button>
           </div>
         </div>
       ) : (
-        <div className="relative flex flex-col items-center">
+        <div className={styles.avatardisplay}>
           {/* Avatar Preview */}
           <div className={`${styles.avatarpreview}  `}>
             <AvatarImage src={src} />
           </div>
 
-          {/* Upload Button */}
-          <label
-            htmlFor="avatar-upload"
-            className="mt-3 px-4 py-2 bg-blue-600 text-white rounded-xl cursor-pointer hover:bg-blue-700 transition"
-          >
+          <label htmlFor="avatar-upload-input" className={styles.uploadbutton}>
             Upload Avatar
           </label>
           <input
-            id="avatar-upload"
+            id="avatar-upload-input"
             type="file"
             accept="image/*"
             onChange={handleImageUpload}
-            className="hidden"
+            className={styles.uploadinput}
           />
         </div>
       )}

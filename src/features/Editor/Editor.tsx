@@ -23,7 +23,6 @@ export default function Editor() {
       component={'section'}
       className={styles.editor}
     >
-      <SkillsEditor />
       <ClosableTab header={'Personalia'}>
         <PersoalDetails />
       </ClosableTab>
@@ -94,6 +93,7 @@ export default function Editor() {
           Add education
         </Button>
       </ClosableTab>
+      <SkillsEditor />
       <ClosableTab header={'Oppsummering'}>
         <SummaryEditor />
       </ClosableTab>
