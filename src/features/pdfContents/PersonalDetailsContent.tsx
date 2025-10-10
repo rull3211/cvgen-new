@@ -1,7 +1,6 @@
 import { Typography } from '@mui/material'
 import style from '../preview/PreviewStyles.module.scss'
 import type { PersonalDetails } from '@/hooks/useCv'
-import AvatarImage from '../Editor/components/avatarUpload/conponents/AvatarImage'
 
 interface Props {
   element: PersonalDetails
@@ -16,9 +15,16 @@ export default function PersonalDetailsContent({ element }: Props) {
   return (
     <section>
       <div className=" pb-4 relative flex flex-col items-center">
-        <AvatarImage src={image} renderNoImage={false} />
+        {element.image && (
+          <div className="w-25 h-25 rounded-full bg-gray-200 overflow-hidden flex items-center justify-center">
+            <img
+              src={image}
+              alt="Avatar"
+              className="object-cover w-full h-full"
+            />
+          </div>
+        )}
       </div>
-
       <section className={style.tittel}>
         <Typography variant="h2">
           {element.fornavn} {element.etternavn}
