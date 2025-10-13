@@ -47,9 +47,7 @@ const ExportCv = () => {
       try {
         const newState = JSON.parse(result)
         cv.setState(newState)
-        alert('State successfully updated!')
       } catch (err) {
-        alert('Invalid JSON file!')
         console.error(err)
       }
     }

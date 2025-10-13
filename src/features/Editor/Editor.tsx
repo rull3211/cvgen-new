@@ -1,4 +1,4 @@
-import { Box, Button, Typography } from '@mui/material'
+import { Box, Button, TextField, Typography } from '@mui/material'
 import Experience from './components/Experience'
 import styles from './editor.module.scss'
 import PersoalDetails from './components/PersonalDetails'
@@ -31,7 +31,14 @@ export default function Editor() {
       </ClosableTab>
       <ClosableTab
         sx={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}
-        header="Arbeidserfaring"
+        header={
+          <TextField
+            value={cvState.formHeaders['workExperience']}
+            onChange={(el) => {
+              cvState.updateFormHeaders('workExperience', el.target.value)
+            }}
+          />
+        }
       >
         {cvState.workExperience.map((el) => {
           const header = (
@@ -64,7 +71,16 @@ export default function Editor() {
         </Button>
       </ClosableTab>
 
-      <ClosableTab header={'Utdanning'}>
+      <ClosableTab
+        header={
+          <TextField
+            value={cvState.formHeaders['education']}
+            onChange={(el) => {
+              cvState.updateFormHeaders('education', el.target.value)
+            }}
+          />
+        }
+      >
         {cvState.education.map((el) => {
           const header = (
             <Box component={'section'}>

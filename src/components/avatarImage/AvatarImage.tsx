@@ -1,4 +1,4 @@
-import styles from '../AvatarUpload.module.scss'
+import styles from './AvatarImage.module.scss'
 export default function AvatarImage({
   src,
   renderNoImage = true,

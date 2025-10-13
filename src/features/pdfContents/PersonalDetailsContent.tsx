@@ -1,7 +1,7 @@
 import { Box, Typography } from '@mui/material'
 import style from '../preview/PreviewStyles.module.scss'
 import type { PersonalDetails } from '@/hooks/useCv'
-import AvatarImage from '../Editor/components/avatarUpload/conponents/AvatarImage'
+import AvatarImage from '../../components/avatarImage/AvatarImage'
 
 interface Props {
   element: PersonalDetails

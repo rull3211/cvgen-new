@@ -1,6 +1,6 @@
 import React, { useState, useCallback } from 'react'
 import Cropper, { type Area } from 'react-easy-crop'
-import AvatarImage from './conponents/AvatarImage'
+import AvatarImage from '../../../components/avatarImage/AvatarImage'
 import styles from './AvatarUpload.module.scss'
 export default function AvatarUpload({
   onChange,

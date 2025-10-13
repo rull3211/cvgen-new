@@ -7,6 +7,7 @@ export type RightOrder = keyof Pick<
   'education' | 'workExperience' | 'summary'
 >
 export type LeftOrder = keyof Pick<CvState, 'skills' | 'personalDetails'>
+
 export interface CvState {
   summary: Array<Summary>
   workExperience: Array<Experience>
@@ -14,6 +15,7 @@ export interface CvState {
   personalDetails: Array<PersonalDetails>
   order: { left: Array<LeftOrder>; right: Array<RightOrder> }
   skills: Array<Skill>
+  formHeaders: Record<string, string>
 }
 
 export interface Summary {
@@ -94,6 +96,11 @@ export const useCv = create(
         left: ['personalDetails', 'skills'],
         right: ['summary', 'workExperience', 'education'],
       },
+      formHeaders: {
+        skills: 'Ferdigheter',
+        education: 'Utdanning',
+        workExperience: 'Arbeidserfaring',
+      },
       skills: [
         { type: 'skill', content: '', id: crypto.randomUUID(), level: '1' },
       ],
@@ -139,6 +146,12 @@ export const useCv = create(
             if (index !== -1) {
               state[experience][index][field] = value
             }
+          }),
+        ),
+      updateFormHeaders: (header: string, value: string) =>
+        set(
+          produce((state: CvState) => {
+            state.formHeaders[header] = value
           }),
         ),
       updateSkills: (

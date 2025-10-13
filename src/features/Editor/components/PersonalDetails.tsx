@@ -2,7 +2,7 @@ import styles from '../editor.module.scss'
 import LabelWrapper from './LabelWrapper'
 import { useCv } from '@/hooks/useCv'
 import DebouncedTextField from '@/components/debouncedTextfield/DebouncedTextField'
-import AvatarUpload from './avatarUpload/AvatarUpload'
+import AvatarUpload from '../avatarUpload/AvatarUpload'
 
 export default function PersoalDetails() {
   const cv = useCv()
