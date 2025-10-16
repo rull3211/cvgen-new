@@ -51,7 +51,7 @@ export default function AvatarUpload({
     circleCtx.clip()
     circleCtx.drawImage(canvas, 0, 0)
 
-    const croppedDataUrl = circleCanvas.toDataURL('image/jpeg')
+    const croppedDataUrl = circleCanvas.toDataURL('image/jpeg', 0.2)
     onChange(croppedDataUrl)
     setImageSrc(null)
   }
