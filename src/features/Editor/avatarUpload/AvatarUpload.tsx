@@ -2,6 +2,7 @@ import React, { useState, useCallback } from 'react'
 import Cropper, { type Area } from 'react-easy-crop'
 import AvatarImage from '../../../components/avatarImage/AvatarImage'
 import styles from './AvatarUpload.module.scss'
+
 export default function AvatarUpload({
   onChange,
   src,
@@ -13,6 +14,8 @@ export default function AvatarUpload({
   const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null)
   const [crop, setCrop] = useState({ x: 0, y: 0 })
   const [zoom, setZoom] = useState(1)
+
+  const TARGET_SIZE = 250 // final avatar size in px
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -28,30 +31,40 @@ export default function AvatarUpload({
 
   const createCroppedImage = async () => {
     if (!imageSrc || !croppedAreaPixels) return
+
     const image = await createImage(imageSrc)
     const canvas = document.createElement('canvas')
+    canvas.width = TARGET_SIZE
+    canvas.height = TARGET_SIZE
     const ctx = canvas.getContext('2d')
     if (!ctx) return
 
     const { width, height, x, y } = croppedAreaPixels
-    canvas.width = width
-    canvas.height = height
 
-    ctx.drawImage(image, x, y, width, height, 0, 0, width, height)
+    // Draw cropped portion scaled to TARGET_SIZE
+    ctx.drawImage(image, x, y, width, height, 0, 0, TARGET_SIZE, TARGET_SIZE)
 
+    // Optional: circular mask
     const circleCanvas = document.createElement('canvas')
-    circleCanvas.width = width
-    circleCanvas.height = height
+    circleCanvas.width = TARGET_SIZE
+    circleCanvas.height = TARGET_SIZE
     const circleCtx = circleCanvas.getContext('2d')
     if (!circleCtx) return
 
     circleCtx.beginPath()
-    circleCtx.arc(width / 2, height / 2, width / 2, 0, 2 * Math.PI)
+    circleCtx.arc(
+      TARGET_SIZE / 2,
+      TARGET_SIZE / 2,
+      TARGET_SIZE / 2,
+      0,
+      2 * Math.PI,
+    )
     circleCtx.closePath()
     circleCtx.clip()
-    circleCtx.drawImage(canvas, 0, 0)
+    circleCtx.drawImage(canvas, 0, 0, TARGET_SIZE, TARGET_SIZE)
 
-    const croppedDataUrl = circleCanvas.toDataURL('image/jpeg', 0.2)
+    // Export as webp for smaller size
+    const croppedDataUrl = circleCanvas.toDataURL('image/webp', 0.2)
     onChange(croppedDataUrl)
     setImageSrc(null)
   }
@@ -96,11 +109,9 @@ export default function AvatarUpload({
         </div>
       ) : (
         <div className={styles.avatardisplay}>
-          {/* Avatar Preview */}
-          <div className={`${styles.avatarpreview}  `}>
+          <div className={styles.avatarpreview}>
             <AvatarImage src={src} />
           </div>
-
           <label htmlFor="avatar-upload-input" className={styles.uploadbutton}>
             Upload Avatar
           </label>
