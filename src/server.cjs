@@ -8,7 +8,7 @@ const zlib = require('zlib')
 const app = express()
 
 // Middleware
-app.use(bodyParser.json({ limit: '500kb' })) // smaller limit now that we compress
+app.use(bodyParser.json({ limit: '200kb' })) // smaller limit now that we compress
 app.use(cors())
 
 // Serve the built Vite frontend
