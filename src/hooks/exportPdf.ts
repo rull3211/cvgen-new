@@ -1,18 +1,23 @@
 import pako from 'pako'
 
-export async function exportPDF(html: string, css: string) {
+export async function exportPDF(html: string, css: string, token: string) {
   const payload = { html, css }
-
   // Compress + base64 encode
   const compressed = pako.gzip(JSON.stringify(payload))
   const base64 = btoa(String.fromCharCode(...compressed))
 
   try {
-    const response = await fetch('http://localhost:3001/generate-pdf', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ data: base64 }),
-    })
+    const response = await fetch(
+      'https://cvgenerator-382610169939.europe-west1.run.app/generate-pdf',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ data: base64 }),
+      },
+    )
 
     if (!response.ok) throw new Error('PDF generation failed')
 

@@ -12,8 +12,10 @@ import { a4Height, a4HeightInCm, a4WidthInCm, a4width } from '@/constants'
 import { useCv } from '@/hooks/useCv'
 import { exportPDF } from '@/hooks/exportPdf'
 import { usePagination } from '@/hooks/usePagination'
+import { useAuth } from '@/hooks/useAuth'
 
 export default function Preview() {
+  const { user } = useAuth()
   const { leftPages, rightPages, pageNumber } = usePagination()
   const numberOfPages = Math.max(pageNumber.left, pageNumber.right) + 1
   const [page, setPage] = useState(0)
@@ -22,10 +24,11 @@ export default function Preview() {
     setPage((page + num + numberOfPages) % numberOfPages)
   }
 
-  const exportPreview = () => {
+  const exportPreview = async () => {
     if (!previewRef.current) return
     const node = previewRef.current
     const html = node.outerHTML
+    const token = await user?.getIdToken()
     const cssText = Array.from(document.styleSheets)
       .map((sheet) => {
         try {
@@ -37,8 +40,7 @@ export default function Preview() {
         }
       })
       .join('\n')
-
-    exportPDF(html, cssText).finally(() => setExport(false))
+    if (token) exportPDF(html, cssText, token).finally(() => setExport(false))
   }
   useEffect(() => {
     if (startExport) exportPreview()

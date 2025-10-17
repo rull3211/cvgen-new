@@ -1,7 +1,10 @@
-# Use official Node LTS image
-FROM node:20-slim
+# Base image with Node + Puppeteer preinstalled
+FROM ghcr.io/puppeteer/puppeteer:23.4.0
 
-# Install fonts and dependencies for headless Chrome (Puppeteer)
+# Switch to root to install missing dependencies
+USER root
+
+# Install system libraries Puppeteer needs
 RUN apt-get update && apt-get install -y \
     wget \
     gnupg \
@@ -16,23 +19,42 @@ RUN apt-get update && apt-get install -y \
     libgbm1 \
     libasound2 \
     libxshmfence1 \
-    && rm -rf /var/lib/apt/lists/*
+    --no-install-recommends && \
+    rm -rf /var/lib/apt/lists/*
+
+# --- Add Chrome installation explicitly ---
+RUN wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | apt-key add - && \
+    echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" \
+        > /etc/apt/sources.list.d/google-chrome.list && \
+    apt-get update && apt-get install -y google-chrome-stable && \
+    rm -rf /var/lib/apt/lists/*
 
 # Set working directory
 WORKDIR /app
 
-# Copy package.json and install dependencies
+# Copy dependency manifests first (for caching)
 COPY package*.json ./
-RUN npm ci --omit=dev
 
-# Copy source
+# Install production dependencies
+RUN npm ci
+
+# Copy all project files
 COPY . .
 
-# Build Vite frontend if needed
-RUN npm run build || echo "Skipping frontend build"
+# Build frontend (Vite)
+RUN npm run build
 
-# Expose port 8080 (Cloud Run expects this)
+# Switch back to Puppeteer’s expected non-root user
+USER pptruser
+
+# Environment setup
+ENV NODE_ENV=production
 ENV PORT=8080
+ENV PUPPETEER_SKIP_DOWNLOAD=true
+ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/google-chrome
 
-# Start the server
+# Expose Cloud Run port
+EXPOSE 8080
+
+# Start your Node server
 CMD ["node", "src/server.cjs"]

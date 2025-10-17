@@ -8,18 +8,32 @@ import {
 } from '@tanstack/react-router'
 
 import './styles.css'
-
 import App from './App.tsx'
 import Editor from './features/Editor/Editor.tsx'
+import { useAuth } from './hooks/useAuth.ts'
+import Login from './features/auth/Login.tsx'
 import Preview from './features/preview/Preview.tsx'
+import { signOut } from 'firebase/auth'
+import { auth } from './features/auth/firebase.ts'
 
-const rootRoute = createRootRoute({
-  component: () => (
+// Auth layout component
+function AuthLayout() {
+  const { user, loading } = useAuth()
+
+  if (loading) return <div>Loading...</div>
+  if (!user) return <Login />
+
+  return (
     <main style={{ display: 'flex', justifyContent: 'space-around' }}>
-      <Editor></Editor>
-      <Preview></Preview>
+      <Editor />
+      <Preview />
     </main>
-  ),
+  )
+}
+
+// Define routes
+const rootRoute = createRootRoute({
+  component: AuthLayout,
 })
 
 const indexRoute = createRoute({
@@ -45,11 +59,13 @@ declare module '@tanstack/react-router' {
   }
 }
 
+// Mount the app
 const rootElement = document.getElementById('app')
 if (rootElement && !rootElement.innerHTML) {
   const root = ReactDOM.createRoot(rootElement)
   root.render(
     <StrictMode>
+      <button onClick={() => signOut(auth)}>Logg ut</button>
       <RouterProvider router={router} />
     </StrictMode>,
   )
