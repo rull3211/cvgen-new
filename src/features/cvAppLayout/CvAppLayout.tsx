@@ -4,7 +4,6 @@ import Preview from '../preview/Preview'
 import { Box, Toolbar } from '@mui/material'
 import { useState } from 'react'
 import { motion } from 'motion/react'
-import PDFPagination from '../paginatedTest/PaginatedApp'
 export default function CvAppLayout() {
   const isSmall = useIsSmallWidth(1400)
   const [mode, setMode] = useState<'Edit' | 'Preview'>('Edit')
