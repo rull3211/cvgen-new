@@ -161,7 +161,15 @@ export default function Preview() {
         </Box>
       </div>
       {startExport && <Export ref={previewRef}></Export>}
-      <div>
+      <div
+        style={{
+          display: 'flex',
+
+          flexDirection: 'column',
+          alignItems: 'center',
+          gap: '1rem',
+        }}
+      >
         <div
           style={{
             height: a4Height * scale + 'cm',
@@ -176,8 +184,8 @@ export default function Preview() {
             style={{
               transformOrigin: 'top left',
               transform: `scale(${scale})`,
-              height: a4Height + 'cm',
-              width: a4width + 'cm',
+              minHeight: a4Height + 'cm',
+              minWidth: a4width + 'cm',
             }}
           >
             <div className={styles.left}>
@@ -197,7 +205,12 @@ export default function Preview() {
             margin: '0 3% 0% 3%',
           }}
         >
-          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+            }}
+          >
             <Button
               disabled={numberOfPages === 1}
               onClick={() => handlePageAction(-1)}
