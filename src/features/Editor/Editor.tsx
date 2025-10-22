@@ -7,13 +7,12 @@ import SkillsEditor from './SkillsEditor/SkillsEditor'
 import { useCv } from '@/hooks/useCv'
 import ClosableTab from '@/components/ClosableTab/ClosableTab'
 
-export default function Editor() {
+export default function Editor({ isSmallWidth }: { isSmallWidth: boolean }) {
   const cvState = useCv()
   return (
     <Box
       sx={{
-        maxWidth: '50%',
-        maxHeight: '100vh',
+        maxWidth: isSmallWidth ? '100%' : '50%',
         overflow: 'auto',
         display: 'flex',
         flexDirection: 'column',

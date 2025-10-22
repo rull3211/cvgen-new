@@ -1,8 +1,9 @@
 @import 'tailwindcss';
 
 body {
-  max-height: 100vh;
-  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
   background-color: rgb(239, 242, 249);
   @apply m-0;
   font-family:
@@ -10,9 +11,35 @@ body {
     'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  height: 100dvh;
+  margin: 0;
+  padding: 0;
+  overflow: hidden; /* no global scroll */
+  display: flex;
+  flex-direction: column;
+}
+#app {
+  flex: 1; /* fills remaining space */
+  display: flex; /* allows child to flex */
+  flex-direction: column;
+  min-height: 0;
+}
+main {
+  flex: 1; /* fills remaining space */
+  display: flex; /* allows child to flex */
+  flex-direction: column;
+  overflow: hidden;
 }
 
 code {
   font-family:
     source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
+}
+html {
+  height: 100dvh;
+  margin: 0;
+  padding: 0;
+  overflow: hidden; /* no global scroll */
+  display: flex;
+  flex-direction: column;
 }

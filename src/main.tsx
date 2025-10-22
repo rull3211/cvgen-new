@@ -15,6 +15,7 @@ import Login from './features/auth/Login.tsx'
 import Preview from './features/preview/Preview.tsx'
 import { signOut } from 'firebase/auth'
 import { auth } from './features/auth/firebase.ts'
+import CvAppLayout from './features/cvAppLayout/CvAppLayout.tsx'
 
 // Auth layout component
 function AuthLayout() {
@@ -23,12 +24,7 @@ function AuthLayout() {
   if (loading) return <div>Loading...</div>
   if (!user) return <Login />
 
-  return (
-    <main style={{ display: 'flex', justifyContent: 'space-around' }}>
-      <Editor />
-      <Preview />
-    </main>
-  )
+  return <CvAppLayout />
 }
 
 // Define routes
@@ -39,7 +35,7 @@ const rootRoute = createRootRoute({
 const indexRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/',
-  component: App,
+  component: AuthLayout,
 })
 
 const routeTree = rootRoute.addChildren([indexRoute])
@@ -65,7 +61,6 @@ if (rootElement && !rootElement.innerHTML) {
   const root = ReactDOM.createRoot(rootElement)
   root.render(
     <StrictMode>
-      <button onClick={() => signOut(auth)}>Logg ut</button>
       <RouterProvider router={router} />
     </StrictMode>,
   )

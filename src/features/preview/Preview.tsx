@@ -8,11 +8,12 @@ import SummaryContent from '../pdfContents/SummaryContent'
 import SkillContent from '../pdfContents/SkillsContent'
 import ExportCv from '../exportContainer/ExportCv'
 import styles from './PreviewStyles.module.scss'
-import { a4Height, a4HeightInCm, a4WidthInCm, a4width } from '@/constants'
+import { a4Height, a4width } from '@/constants'
 import { useCv } from '@/hooks/useCv'
 import { exportPDF } from '@/hooks/exportPdf'
 import { usePagination } from '@/hooks/usePagination'
 import { useAuth } from '@/hooks/useAuth'
+import { useScaleOnResize } from './hooks/useScale'
 
 export default function Preview() {
   const { user } = useAuth()
@@ -26,30 +27,51 @@ export default function Preview() {
 
   const exportPreview = async () => {
     if (!previewRef.current) return
+
     const node = previewRef.current
     const html = node.outerHTML
     const token = await user?.getIdToken()
+
+    // ✨ Editable list of tag selectors to exclude
+    const excludedTagSelectors = ['html', 'body']
+
     const cssText = Array.from(document.styleSheets)
       .map((sheet) => {
         try {
           return Array.from(sheet.cssRules)
+            .filter((rule) => {
+              // Include all non-style rules (like @media, @font-face)
+              if (!(rule instanceof CSSStyleRule)) return true
+
+              const selector = rule.selectorText || ''
+
+              // Check if selector is a pure tag (or list of tags)
+              const hasTagSelector = excludedTagSelectors.some((tag) =>
+                new RegExp(`\\b${tag}\\b(?![.#])`, 'i').test(selector),
+              )
+
+              return !hasTagSelector
+            })
             .map((rule) => rule.cssText)
             .join('\n')
         } catch (e) {
+          // Skip cross-origin stylesheets gracefully
           return ''
         }
       })
       .join('\n')
-    if (token) exportPDF(html, cssText, token).finally(() => setExport(false))
+
+    if (token) {
+      exportPDF(html, cssText, token).finally(() => setExport(false))
+    }
   }
+
   useEffect(() => {
     if (startExport) exportPreview()
   }, [startExport])
 
   const previewRef = useRef<HTMLDivElement>(null)
-  const vw = window.innerWidth
-  const vh = window.innerHeight
-  const scale = Math.min(1, Math.min(vw / a4WidthInCm, vh / a4HeightInCm) * 0.9)
+  const scale = useScaleOnResize()
   const cv = useCv()
   const right = cv.order.right.map((el) => {
     const pages = rightPages[el][page]
@@ -98,7 +120,6 @@ export default function Preview() {
           if (render.type === 'personalDetails') {
             return <PersonalDetailsContent key={render.id} element={render} />
           } else {
-            console.log(cv[el])
             if (
               (index === 0 && render.content) ||
               (index === 0 && cv[el].length > 1)
@@ -122,9 +143,10 @@ export default function Preview() {
       <div
         style={{
           transform: `scale(${scale})`,
-          transformOrigin: 'top left',
+          transformOrigin: 'top center',
           display: 'flex',
           flexDirection: 'column',
+          gap: '1rem',
         }}
       >
         <Box
@@ -136,10 +158,7 @@ export default function Preview() {
         >
           <PDFPagination></PDFPagination>
 
-          <div
-            style={{ transform: `scale(${scale})` }}
-            className={styles.preview}
-          >
+          <div className={styles.preview}>
             <div className={styles.left}>
               <section>{left}</section>
             </div>
