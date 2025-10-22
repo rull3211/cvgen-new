@@ -139,11 +139,12 @@ export default function Preview() {
   })
   return (
     <>
-      {startExport && <Export ref={previewRef}></Export>}
       <div
         style={{
+          position: 'absolute',
+          top: '-100%',
           transform: `scale(${scale})`,
-          transformOrigin: 'top center',
+          transformOrigin: 'top left',
           display: 'flex',
           flexDirection: 'column',
           gap: '1rem',
@@ -157,8 +158,28 @@ export default function Preview() {
           }}
         >
           <PDFPagination></PDFPagination>
-
-          <div className={styles.preview}>
+        </Box>
+      </div>
+      {startExport && <Export ref={previewRef}></Export>}
+      <div>
+        <div
+          style={{
+            height: a4Height * scale + 'cm',
+            width: a4width * scale + 'cm',
+            transformOrigin: 'top left',
+            display: 'flex',
+            flexDirection: 'column',
+          }}
+        >
+          <div
+            className={styles.preview}
+            style={{
+              transformOrigin: 'top left',
+              transform: `scale(${scale})`,
+              height: a4Height + 'cm',
+              width: a4width + 'cm',
+            }}
+          >
             <div className={styles.left}>
               <section>{left}</section>
             </div>
@@ -166,7 +187,7 @@ export default function Preview() {
               <section>{right}</section>
             </div>
           </div>
-        </Box>
+        </div>
         <Paper
           component={'section'}
           sx={{

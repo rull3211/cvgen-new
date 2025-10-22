@@ -16,6 +16,7 @@ export function useScaleOnResize(modifier = 0.9) {
         1,
         Math.min(vw / a4WidthInCm, vh / a4HeightInCm) * modifier,
       )
+      console.log(newScale)
       setScale(newScale)
     }
 

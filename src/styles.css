@@ -25,6 +25,7 @@ body {
   min-height: 0;
 }
 main {
+  padding: 0.5rem;
   flex: 1; /* fills remaining space */
   display: flex; /* allows child to flex */
   flex-direction: column;

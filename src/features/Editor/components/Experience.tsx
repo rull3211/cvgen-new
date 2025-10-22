@@ -6,6 +6,7 @@ import type { CvState, ExperienceKey } from '@/hooks/useCv'
 import { useCv } from '@/hooks/useCv'
 import DebouncedTextField from '@/components/debouncedTextfield/DebouncedTextField'
 import { StringDatePicker } from '@/components/datePicker/StringDatepicker'
+import useIsSmallWidth from '@/hooks/useIsSmallWidth'
 
 interface Props {
   label1: string
@@ -18,12 +19,14 @@ interface Props {
 }
 
 export default function Experience(props: Props) {
+  const isSmall = useIsSmallWidth(680)
   const cv = useCv()
   const workExperience = cv[props.type].find((el) => el.id === props.id)
+  const rowClassName = `${styles.row} ${isSmall && styles.small}`
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs}>
       <section className={styles.experience}>
-        <section className={styles.row}>
+        <section className={rowClassName}>
           <LabelWrapper id={props.id + props.label1} label={props.label1}>
             <DebouncedTextField
               id={props.id + props.label1}
@@ -56,9 +59,12 @@ export default function Experience(props: Props) {
           </LabelWrapper>
         </section>
 
-        <section className={styles.row}>
+        <section className={rowClassName}>
           <LabelWrapper id={props.id + props.label3} label={props.label3}>
-            <section id={props.id + props.label3} className={styles.date}>
+            <section
+              id={props.id + props.label3}
+              className={`${styles.date} ${styles.small}`}
+            >
               <StringDatePicker
                 id={props.id + props.label3}
                 slots={{ openPickerIcon: () => null }}
@@ -97,7 +103,7 @@ export default function Experience(props: Props) {
             />
           </LabelWrapper>
         </section>
-        <section className={styles.row}>
+        <section className={rowClassName}>
           <LabelWrapper id={props.id + props.label5} label={props.label5}>
             <DebouncedTextField
               id={props.id + props.label5}

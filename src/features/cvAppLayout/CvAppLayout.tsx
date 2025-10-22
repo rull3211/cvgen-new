@@ -1,15 +1,10 @@
 import useIsSmallWidth from '@/hooks/useIsSmallWidth'
 import Editor from '../Editor/Editor'
 import Preview from '../preview/Preview'
-import {
-  Box,
-  Button,
-  ToggleButton,
-  ToggleButtonGroup,
-  Toolbar,
-} from '@mui/material'
+import { Box, Toolbar } from '@mui/material'
 import { useState } from 'react'
 import { motion } from 'motion/react'
+import PDFPagination from '../paginatedTest/PaginatedApp'
 export default function CvAppLayout() {
   const isSmall = useIsSmallWidth(1400)
   const [mode, setMode] = useState<'Edit' | 'Preview'>('Edit')
@@ -21,6 +16,7 @@ export default function CvAppLayout() {
         justifyContent: 'space-around',
         flexDirection: 'column',
         alignItems: isSmall ? 'center' : 'start',
+        gap: '1rem',
       }}
     >
       {isSmall && (
@@ -28,7 +24,6 @@ export default function CvAppLayout() {
           sx={{
             background: 'rgb(239, 242, 249)',
             justifyContent: 'center',
-            py: 1.5,
           }}
         >
           <div
@@ -99,6 +94,7 @@ export default function CvAppLayout() {
           flex: 1,
           flexDirection: 'row',
           minHeight: 0,
+          width: '100%',
         }}
       >
         {(!isSmall || mode === 'Edit') && <Editor isSmallWidth={isSmall} />}

@@ -8,13 +8,8 @@ import {
 } from '@tanstack/react-router'
 
 import './styles.css'
-import App from './App.tsx'
-import Editor from './features/Editor/Editor.tsx'
 import { useAuth } from './hooks/useAuth.ts'
 import Login from './features/auth/Login.tsx'
-import Preview from './features/preview/Preview.tsx'
-import { signOut } from 'firebase/auth'
-import { auth } from './features/auth/firebase.ts'
 import CvAppLayout from './features/cvAppLayout/CvAppLayout.tsx'
 
 // Auth layout component
