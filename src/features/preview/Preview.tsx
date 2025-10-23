@@ -80,30 +80,37 @@ export default function Preview() {
 
     return pages.map((index) => {
       const render = cv[el][index]
-      if (render.type === 'summary') {
-        return <SummaryContent key={render.id} text={render.content} />
-      } else {
-        const { by, tittel, institusjon, fra, til, beskrivelse } = render
-        const renderHasContent =
-          !!by || !!tittel || !!institusjon || !!fra || !!til || !!beskrivelse
-        if (
-          (index === 0 && renderHasContent) ||
-          (index === 0 && cv[el].length > 1)
-        ) {
-          const text =
-            render.type === 'workExperience' ? 'Arbeidserfaring' : 'Utdanning'
-          return [
-            <Typography
-              key={render.type}
-              sx={{ fontSize: '1.5rem', fontWeight: 700 }}
-              variant="h2"
-            >
-              {text}
-            </Typography>,
-            <ExperienceContent key={render.id} element={render} />,
-          ]
+      try {
+        if (render?.type === 'summary') {
+          return <SummaryContent key={render.id} text={render.content} />
+        } else {
+          const { by, tittel, institusjon, fra, til, beskrivelse } = render
+          const renderHasContent =
+            !!by || !!tittel || !!institusjon || !!fra || !!til || !!beskrivelse
+          if (
+            (index === 0 && renderHasContent) ||
+            (index === 0 && cv[el].length > 1)
+          ) {
+            const text =
+              render.type === 'workExperience' ? 'Arbeidserfaring' : 'Utdanning'
+            return [
+              <Typography
+                key={render.type}
+                sx={{ fontSize: '1.5rem', fontWeight: 700 }}
+                variant="h2"
+              >
+                {text}
+              </Typography>,
+              <ExperienceContent key={render.id} element={render} />,
+            ]
+          }
+          return <ExperienceContent key={render.id} element={render} />
         }
-        return <ExperienceContent key={render.id} element={render} />
+      } catch (er) {
+        console.log(render, er)
+        console.log(cv)
+        console.log(index)
+        console.log(el)
       }
     })
   })
@@ -117,7 +124,7 @@ export default function Preview() {
         {pages.map((index) => {
           const render = cv[el][index]
 
-          if (render.type === 'personalDetails') {
+          if (render?.type === 'personalDetails') {
             return <PersonalDetailsContent key={render.id} element={render} />
           } else {
             if (

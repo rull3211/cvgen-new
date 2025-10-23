@@ -9,7 +9,6 @@ export function useAuth() {
   const cv = useCv()
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (u) => {
-      if (u) cv.loadFromFirestore()
       setUser(u)
       setLoading(false)
     })

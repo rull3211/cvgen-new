@@ -63,8 +63,7 @@ const ExportCv = () => {
       >
         Export as Json
       </Button>
-      <Button onClick={() => cv.deleteFromFirestore()}>Slett meg</Button>
-      <Button onClick={() => cv.saveToFirestore()}>Lagre</Button>
+
       <Input
         type="file"
         inputProps={{ accept: 'application/json' }}

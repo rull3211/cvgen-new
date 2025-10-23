@@ -16,8 +16,7 @@ type PaginationState = {
   resetPages: () => void
   setPageNumber: (side: keyof PageNumber, number: number) => void
 }
-
-export const usePagination = create<PaginationState>((set) => ({
+const initialState = {
   pageNumber: { right: 0, left: 0 },
   leftPages: { personalDetails: { 0: [] }, skills: { 0: [] } } as Record<
     LeftOrder,
@@ -28,12 +27,19 @@ export const usePagination = create<PaginationState>((set) => ({
     education: { 0: [] },
     workExperience: { 0: [] },
   } as Record<RightOrder, Record<number, Array<number>>>,
+}
+export const usePagination = create<PaginationState>((set) => ({
+  ...initialState,
   setLeftPages: (pages) => set({ leftPages: pages }),
   setRightPages: (pages) => set({ rightPages: pages }),
   resetPages: () =>
     set({
-      leftPages: {} as Record<LeftOrder, Record<number, Array<number>>>,
-      rightPages: {} as Record<RightOrder, Record<number, Array<number>>>,
+      leftPages: initialState.leftPages,
+      rightPages: initialState.rightPages,
+    }),
+  resetPagination: () =>
+    set({
+      ...initialState,
     }),
   setPageNumber: (side, number) =>
     set(
