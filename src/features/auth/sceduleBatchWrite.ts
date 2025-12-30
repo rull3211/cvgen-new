@@ -11,8 +11,16 @@ type PendingWrite = {
 let pendingWrites: Map<string, any> = new Map()
 let batchTimeout: number | null = null
 
+// Export function to clear pending writes (used during load from Firestore)
+export function clearPendingWrites() {
+  pendingWrites.clear()
+  if (batchTimeout) {
+    clearTimeout(batchTimeout)
+    batchTimeout = null
+  }
+}
+
 export function scheduleBatchWrite({ path, data }: PendingWrite) {
-  console.log(path, data)
   // Always keep only the latest write for each path
   pendingWrites.set(path, data)
 

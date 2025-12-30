@@ -1,10 +1,13 @@
 import { create } from 'zustand'
 import { immer } from 'zustand/middleware/immer'
-import { deleteDoc, doc, getDoc, setDoc } from 'firebase/firestore'
+import { deleteDoc, doc, getDoc } from 'firebase/firestore'
 import { getAuth } from 'firebase/auth'
 import { db } from '@/features/auth/firebase'
 import { usePagination } from './usePagination'
-import { scheduleBatchWrite } from '@/features/auth/sceduleBatchWrite'
+import {
+  scheduleBatchWrite,
+  clearPendingWrites,
+} from '@/features/auth/sceduleBatchWrite'
 
 export type RightOrder = keyof Pick<
   CvState,
@@ -20,6 +23,7 @@ export type CvState = {
   order: { left: Array<LeftOrder>; right: Array<RightOrder> }
   skills: Array<Skill>
   formHeaders: Record<string, string>
+  _isLoading: boolean // Internal flag to prevent writes during load
 }
 type CvActions = {
   setState: (newState: CvState) => void
@@ -47,6 +51,8 @@ type CvActions = {
     id: string,
   ) => void
   updateFormHeaders: (header: string, value: string) => void
+  loadFromFirestore: () => Promise<void>
+  deleteFromFirestore: () => Promise<void>
 }
 export interface Summary {
   id: string
@@ -113,6 +119,9 @@ function createEmptyPersonalDetails(): PersonalDetails {
   }
 }
 
+// Module-level flag to prevent writes during load operations
+let isLoadingFromFirestore = false
+
 export type ExperienceKey = 'workExperience' | 'education'
 const initialState: CvState = {
   summary: [{ type: 'summary', content: '', id: crypto.randomUUID() }],
@@ -129,10 +138,11 @@ const initialState: CvState = {
     workExperience: 'Arbeidserfaring',
   },
   skills: [{ type: 'skill', content: '', id: crypto.randomUUID(), level: '1' }],
+  _isLoading: false,
 }
 
 export const useCv = create(
-  immer<CvState & CvActions>((set, get) => ({
+  immer<CvState & CvActions>((set) => ({
     // -------------------------------
     // Initial State
     // -------------------------------
@@ -147,10 +157,12 @@ export const useCv = create(
       set((state) => {
         const newExp = createEmptyExperience('workExperience')
         state[experience].push(newExp)
-        scheduleBatchWrite({
-          path: experience,
-          data: state[experience].map((e) => ({ ...e })),
-        })
+        if (!state._isLoading && !isLoadingFromFirestore) {
+          scheduleBatchWrite({
+            path: experience,
+            data: state[experience].map((e) => ({ ...e })),
+          })
+        }
       })
     },
 
@@ -163,78 +175,90 @@ export const useCv = create(
           level: '1',
         }
         state.skills.push(newSkill)
+        if (!state._isLoading && !isLoadingFromFirestore) {
+          scheduleBatchWrite({
+            path: 'skills',
+            data: state.skills.map((s) => ({ ...s })),
+          })
+        }
       })
     },
 
     updateSummary: (field, value, id) => {
       set((state) => {
         const item = state.summary.find((el) => el.id === id)
-        if (item) item[field] = value
+        if (item) {
+          item[field] = value
+          if (!state._isLoading && !isLoadingFromFirestore) {
+            scheduleBatchWrite({
+              path: 'summary',
+              data: state.summary.map((s) => ({ ...s })),
+            })
+          }
+        }
       })
     },
 
     updateWorkExperience: (experience, field, value, id) => {
       set((state) => {
         const item = state[experience].find((el) => el.id === id)
-        if (item) item[field] = value
+        if (item) {
+          item[field] = value
+          if (!state._isLoading && !isLoadingFromFirestore) {
+            scheduleBatchWrite({
+              path: experience,
+              data: state[experience].map((e) => ({ ...e })),
+            })
+          }
+        }
       })
     },
 
     updateSkills: (field, value, id) => {
       set((state) => {
         const item = state.skills.find((el) => el.id === id)
-        if (item) item[field] = value
+        if (item) {
+          item[field] = value
+          if (!state._isLoading && !isLoadingFromFirestore) {
+            scheduleBatchWrite({
+              path: 'skills',
+              data: state.skills.map((s) => ({ ...s })),
+            })
+          }
+        }
       })
     },
 
     updatePersonalDetails: (field, value, id) => {
       set((state) => {
         const item = state.personalDetails.find((el) => el.id === id)
-        if (item) item[field] = value
+        if (item) {
+          item[field] = value
+          if (!state._isLoading && !isLoadingFromFirestore) {
+            scheduleBatchWrite({
+              path: 'personalDetails',
+              data: state.personalDetails.map((p) => ({ ...p })),
+            })
+          }
+        }
       })
     },
 
     updateFormHeaders: (header, value) => {
       set((state) => {
         state.formHeaders[header] = value
+        if (!state._isLoading && !isLoadingFromFirestore) {
+          scheduleBatchWrite({
+            path: 'formHeaders',
+            data: { ...state.formHeaders },
+          })
+        }
       })
     },
 
     // -------------------------------
     // Firestore helpers
     // -------------------------------
-  })),
-)
-
-/**
- *  saveToFirestore: async () => {
-      const auth = getAuth()
-      const user = auth.currentUser
-      if (!user) throw new Error('Not authenticated')
-
-      const {
-        summary,
-        workExperience,
-        education,
-        personalDetails,
-        order,
-        skills,
-        formHeaders,
-      } = get()
-      const data: CvState = {
-        summary,
-        workExperience,
-        education,
-        personalDetails,
-        order,
-        skills,
-        formHeaders,
-      }
-
-      const ref = doc(db, `users/${user.uid}/cvs/main`)
-      await setDoc(ref, data, { merge: true })
-    },
-
     loadFromFirestore: async () => {
       const auth = getAuth()
       const user = auth.currentUser
@@ -242,7 +266,32 @@ export const useCv = create(
 
       const ref = doc(db, `users/${user.uid}/cvs/main`)
       const snap = await getDoc(ref)
-      if (snap.exists()) set(() => snap.data() as CvState)
+      if (snap.exists()) {
+        // Set module flag to prevent any writes
+        isLoadingFromFirestore = true
+
+        // Clear any pending writes before loading
+        clearPendingWrites()
+
+        const data = snap.data() as CvState
+
+        // Use immer-style mutation to update only data fields
+        set((state) => {
+          // Update each field individually
+          state.summary = data.summary || state.summary
+          state.workExperience = data.workExperience || state.workExperience
+          state.education = data.education || state.education
+          state.personalDetails = data.personalDetails || state.personalDetails
+          state.order = data.order || state.order
+          state.skills = data.skills || state.skills
+          state.formHeaders = data.formHeaders || state.formHeaders
+          state._isLoading = false
+        })
+
+        // Clear again after loading and reset flag
+        clearPendingWrites()
+        isLoadingFromFirestore = false
+      }
     },
 
     deleteFromFirestore: async () => {
@@ -252,18 +301,23 @@ export const useCv = create(
 
       const ref = doc(db, `users/${user.uid}/cvs/main`)
       await deleteDoc(ref).then(() => {
-        set(() => initialState)
+        // Set module flag to prevent writes
+        isLoadingFromFirestore = true
+
+        // Clear any pending writes before resetting
+        clearPendingWrites()
+
+        set((state) => {
+          state._isLoading = true
+          Object.assign(state, initialState)
+          state._isLoading = false
+        })
         usePagination.getState().resetPages()
+
+        // Clear again after reset and reset flag
+        clearPendingWrites()
+        isLoadingFromFirestore = false
       })
     },
-
-    autoSave: (() => {
-      let timeout: number | null = null
-      return () => {
-        if (timeout) clearTimeout(timeout)
-        timeout = window.setTimeout(() => {
-          get().saveToFirestore().catch(console.error)
-        }, 2000)
-      }
-    })(),
- */
+  })),
+)

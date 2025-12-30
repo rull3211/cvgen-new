@@ -2,11 +2,21 @@ import useIsSmallWidth from '@/hooks/useIsSmallWidth'
 import Editor from '../Editor/Editor'
 import Preview from '../preview/Preview'
 import { Box, Toolbar } from '@mui/material'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion } from 'motion/react'
+import { useCv } from '@/hooks/useCv'
+
 export default function CvAppLayout() {
   const isSmall = useIsSmallWidth(1400)
   const [mode, setMode] = useState<'Edit' | 'Preview'>('Edit')
+  const loadFromFirestore = useCv((state) => state.loadFromFirestore)
+
+  // Load CV data from Firestore on mount
+  useEffect(() => {
+    loadFromFirestore().catch((err) => {
+      console.error('Failed to load CV from Firestore:', err)
+    })
+  }, [loadFromFirestore])
 
   return (
     <main
