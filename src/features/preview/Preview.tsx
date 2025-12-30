@@ -14,10 +14,17 @@ import { exportPDF } from '@/hooks/exportPdf'
 import { usePagination } from '@/hooks/usePagination'
 import { useAuth } from '@/hooks/useAuth'
 import { useScaleOnResize } from './hooks/useScale'
+import { useShallow } from 'zustand/shallow'
 
 export default function Preview() {
   const { user } = useAuth()
-  const { leftPages, rightPages, pageNumber } = usePagination()
+  const { leftPages, rightPages, pageNumber } = usePagination(
+    useShallow((state) => ({
+      leftPages: state.leftPages,
+      rightPages: state.rightPages,
+      pageNumber: state.pageNumber,
+    })),
+  )
   const numberOfPages = Math.max(pageNumber.left, pageNumber.right) + 1
   const [page, setPage] = useState(0)
   const [startExport, setExport] = useState(false)
@@ -72,14 +79,23 @@ export default function Preview() {
 
   const previewRef = useRef<HTMLDivElement>(null)
   const scale = useScaleOnResize()
-  const cv = useCv()
-  const right = cv.order.right.map((el) => {
+  const cvState = useCv(
+    useShallow((state) => ({
+      order: state.order,
+      summary: state.summary,
+      workExperience: state.workExperience,
+      education: state.education,
+      skills: state.skills,
+      personalDetails: state.personalDetails,
+    })),
+  )
+  const right = cvState.order.right.map((el) => {
     const pages = rightPages[el][page]
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if (!pages) return null
 
     return pages.map((index) => {
-      const render = cv[el][index]
+      const render = cvState[el][index]
       try {
         if (render?.type === 'summary') {
           return <SummaryContent key={render.id} text={render.content} />
@@ -89,7 +105,7 @@ export default function Preview() {
             !!by || !!tittel || !!institusjon || !!fra || !!til || !!beskrivelse
           if (
             (index === 0 && renderHasContent) ||
-            (index === 0 && cv[el].length > 1)
+            (index === 0 && cvState[el].length > 1)
           ) {
             const text =
               render.type === 'workExperience' ? 'Arbeidserfaring' : 'Utdanning'
@@ -108,13 +124,13 @@ export default function Preview() {
         }
       } catch (er) {
         console.log(render, er)
-        console.log(cv)
+        console.log(cvState)
         console.log(index)
         console.log(el)
       }
     })
   })
-  const left = cv.order.left.map((el) => {
+  const left = cvState.order.left.map((el) => {
     const pages = leftPages[el][page]
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if (!pages) return null
@@ -122,14 +138,14 @@ export default function Preview() {
     return (
       <section key={el} className={styles[el]}>
         {pages.map((index) => {
-          const render = cv[el][index]
+          const render = cvState[el][index]
 
           if (render?.type === 'personalDetails') {
             return <PersonalDetailsContent key={render.id} element={render} />
           } else {
             if (
               (index === 0 && render.content) ||
-              (index === 0 && cv[el].length > 1)
+              (index === 0 && cvState[el].length > 1)
             ) {
               return [
                 <Typography key={'ferdigheter'} variant="h2">

@@ -1,4 +1,4 @@
-import { Box, Button, TextField, Typography } from '@mui/material'
+import { Box, Button, TextField } from '@mui/material'
 import styles from './editor.module.scss'
 import PersoalDetails from './personalDetails/PersonalDetailsEditor'
 import SummaryEditor from './summary/Summary'
@@ -7,34 +7,41 @@ import { useCv } from '@/hooks/useCv'
 import ClosableTab from '@/components/ClosableTab/ClosableTab'
 import { useShallow } from 'zustand/shallow'
 import ExperienceCard from './experience/ExperienceEditorCard'
+import { useMemo } from 'react'
 
 export default function Editor({ isSmallWidth }: { isSmallWidth: boolean }) {
   const {
     formHeaders,
     updateFormHeaders,
     addWorkExperience,
-    workExperienceIds,
-    educationIds,
+    workExperience,
+    education,
   } = useCv(
-    useShallow((state) => {
-      return {
-        formHeaders: state.formHeaders,
-        updateFormHeaders: state.updateFormHeaders,
-        addWorkExperience: state.addWorkExperience,
-        workExperienceIds: state.workExperience.map((el) => {
-          return {
-            id: el.id,
-            type: el.type,
-          }
-        }),
-        educationIds: state.education.map((el) => {
-          return {
-            id: el.id,
-            type: el.type,
-          }
-        }),
-      }
-    }),
+    useShallow((state) => ({
+      formHeaders: state.formHeaders,
+      updateFormHeaders: state.updateFormHeaders,
+      addWorkExperience: state.addWorkExperience,
+      workExperience: state.workExperience,
+      education: state.education,
+    })),
+  )
+
+  const workExperienceIds = useMemo(
+    () =>
+      workExperience.map((el) => ({
+        id: el.id,
+        type: el.type,
+      })),
+    [workExperience],
+  )
+
+  const educationIds = useMemo(
+    () =>
+      education.map((el) => ({
+        id: el.id,
+        type: el.type,
+      })),
+    [education],
   )
   return (
     <Box
@@ -67,7 +74,7 @@ export default function Editor({ isSmallWidth }: { isSmallWidth: boolean }) {
         }
       >
         {workExperienceIds.map((el) => {
-          return <ExperienceCard identifier={el} />
+          return <ExperienceCard key={el.id} identifier={el} />
         })}
         <Button onClick={() => addWorkExperience('workExperience')}>
           Add experience
@@ -85,7 +92,7 @@ export default function Editor({ isSmallWidth }: { isSmallWidth: boolean }) {
         }
       >
         {educationIds.map((el) => (
-          <ExperienceCard identifier={el}></ExperienceCard>
+          <ExperienceCard key={el.id} identifier={el}></ExperienceCard>
         ))}
         <Button onClick={() => addWorkExperience('education')}>
           Add education

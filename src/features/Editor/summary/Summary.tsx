@@ -1,24 +1,30 @@
 import LabelWrapper from '../components/LabelWrapper'
 import { useCv } from '@/hooks/useCv'
 import DebouncedTextField from '@/components/debouncedTextfield/DebouncedTextField'
+import { useShallow } from 'zustand/shallow'
 
 export default function SummaryEditor() {
-  const cv = useCv()
+  const { summary, updateSummary } = useCv(
+    useShallow((state) => ({
+      summary: state.summary,
+      updateSummary: state.updateSummary,
+    })),
+  )
   return (
     <section>
-      {cv.summary.map((summary) => {
+      {summary.map((summaryItem) => {
         return (
           <LabelWrapper
-            id={summary.id + 'oppsummering'}
-            key={summary.id}
+            id={summaryItem.id + 'oppsummering'}
+            key={summaryItem.id}
             label={'Oppsummering'}
           >
             <DebouncedTextField
-              id={summary.id + 'oppsummering'}
+              id={summaryItem.id + 'oppsummering'}
               onChange={(el) =>
-                cv.updateSummary('content', el.target.value, summary.id)
+                updateSummary('content', el.target.value, summaryItem.id)
               }
-              value={summary.content}
+              value={summaryItem.content}
               fullWidth
               rows={7}
               multiline

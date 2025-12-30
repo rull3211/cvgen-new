@@ -22,7 +22,16 @@ export default function Export(props: Props) {
     }),
   )
   const numberOfPages = Math.max(pageNumber.left, pageNumber.right) + 1
-  const cv = useCv()
+  const cvState = useCv(
+    useShallow((state) => ({
+      order: state.order,
+      summary: state.summary,
+      workExperience: state.workExperience,
+      education: state.education,
+      skills: state.skills,
+      personalDetails: state.personalDetails,
+    })),
+  )
 
   return (
     <>
@@ -41,13 +50,13 @@ export default function Export(props: Props) {
       >
         <Box ref={props.ref} sx={{ display: 'flex', flexDirection: 'column' }}>
           {Array.from({ length: numberOfPages }).map((_, pageIndex) => {
-            const right = cv.order.right.map((el) => {
+            const right = cvState.order.right.map((el) => {
               const pages = rightPages[el][pageIndex]
               // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
               if (!pages) return null
 
               return pages.map((index) => {
-                const render = cv[el][index]
+                const render = cvState[el][index]
                 console.log(render)
                 if (render.type === 'summary') {
                   return (
@@ -75,7 +84,7 @@ export default function Export(props: Props) {
                 }
               })
             })
-            const left = cv.order.left.map((el) => {
+            const left = cvState.order.left.map((el) => {
               const pages = leftPages[el][pageIndex]
               // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
               if (!pages) return null
@@ -83,7 +92,7 @@ export default function Export(props: Props) {
               return (
                 <section className={styles[el]}>
                   {pages.map((index) => {
-                    const render = cv[el][index]
+                    const render = cvState[el][index]
 
                     if (render.type === 'personalDetails') {
                       return (

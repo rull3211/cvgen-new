@@ -8,12 +8,28 @@ import type { CvState } from '@/hooks/useCv'
 import { usePagination } from '@/hooks/usePagination'
 import { useCv } from '@/hooks/useCv'
 import { a4HeightInCm, a4WidthInCm } from '@/constants'
+import { useShallow } from 'zustand/shallow'
 
 export default function PDFPagination() {
   const leftRef = useRef<HTMLDivElement | null>(null)
   const rightRef = useRef<HTMLDivElement | null>(null)
-  const cv = useCv()
-  const { setLeftPages, setRightPages, setPageNumber } = usePagination()
+  const cvState = useCv(
+    useShallow((state) => ({
+      order: state.order,
+      summary: state.summary,
+      workExperience: state.workExperience,
+      education: state.education,
+      skills: state.skills,
+      personalDetails: state.personalDetails,
+    })),
+  )
+  const { setLeftPages, setRightPages, setPageNumber } = usePagination(
+    useShallow((state) => ({
+      setLeftPages: state.setLeftPages,
+      setRightPages: state.setRightPages,
+      setPageNumber: state.setPageNumber,
+    })),
+  )
   function paginate(container: HTMLDivElement, side: keyof CvState['order']) {
     const vw = window.innerWidth
     const vh = window.innerHeight
@@ -27,7 +43,7 @@ export default function PDFPagination() {
     let currentPageNumber = 0
     let currentHeight = 0
     container.getBoundingClientRect()
-    cv.order[side].forEach((sectionName, sectionIndex) => {
+    cvState.order[side].forEach((sectionName, sectionIndex) => {
       const section = children[sectionIndex]
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       if (!section) return
@@ -71,7 +87,7 @@ export default function PDFPagination() {
     if (rightRef.current) observer.observe(rightRef.current)
 
     return () => observer.disconnect()
-  }, [cv.education, cv.workExperience])
+  }, [cvState.education, cvState.workExperience])
 
   return (
     <div>
@@ -90,10 +106,10 @@ export default function PDFPagination() {
         aria-hidden
       >
         <div ref={leftRef} className={`${styles.left} ${styles.calc}`}>
-          {cv.order.left.map((orderElement) => {
+          {cvState.order.left.map((orderElement) => {
             return (
               <section key={orderElement + 'paginate'}>
-                {cv[orderElement].map((elementToRender) => {
+                {cvState[orderElement].map((elementToRender) => {
                   if (elementToRender.type === 'personalDetails')
                     return (
                       <PersonalDetailsContent
@@ -113,10 +129,10 @@ export default function PDFPagination() {
           })}
         </div>
         <div ref={rightRef} className={`${styles.right} ${styles.calc}`}>
-          {cv.order.right.map((field) => {
+          {cvState.order.right.map((field) => {
             return (
               <section key={field + 'paginate'}>
-                {cv[field].map((el) => {
+                {cvState[field].map((el) => {
                   if (el.type === 'summary')
                     return (
                       <SummaryContent

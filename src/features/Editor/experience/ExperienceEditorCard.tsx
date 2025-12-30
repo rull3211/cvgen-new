@@ -12,7 +12,7 @@ export default function ExperienceEditorCard({
 }) {
   const experience = useCv(
     useShallow((state) => {
-      return state[identifier.type].find((el) => (el.id = identifier.id))
+      return state[identifier.type].find((el) => el.id === identifier.id)
     }),
   )
   if (!experience) return
