@@ -1,10 +1,10 @@
 import DebouncedTextField from '@/components/debouncedTextfield/DebouncedTextField'
-import LabelWrapper from './LabelWrapper'
+import LabelWrapper from '../components/LabelWrapper'
 import styles from '../editor.module.scss'
 import { useCv } from '@/hooks/useCv'
 import { useShallow } from 'zustand/shallow'
 import AvatarUpload from '../avatarUpload/AvatarUpload'
-export default function PersonalDetailsItem({ id }: { id: string }) {
+export default function PersonalDetailEditorItem({ id }: { id: string }) {
   const personalDetail = useCv(
     useShallow((state) => {
       return state.personalDetails.find((el) => el.id === id)

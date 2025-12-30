@@ -1,14 +1,41 @@
 import { Box, Button, TextField, Typography } from '@mui/material'
-import Experience from './components/Experience'
 import styles from './editor.module.scss'
-import PersoalDetails from './components/PersonalDetails'
+import PersoalDetails from './personalDetails/PersonalDetailsEditor'
 import SummaryEditor from './summary/Summary'
 import SkillsEditor from './SkillsEditor/SkillsEditor'
 import { useCv } from '@/hooks/useCv'
 import ClosableTab from '@/components/ClosableTab/ClosableTab'
+import { useShallow } from 'zustand/shallow'
+import ExperienceCard from './experience/ExperienceEditorCard'
 
 export default function Editor({ isSmallWidth }: { isSmallWidth: boolean }) {
-  const cvState = useCv()
+  const {
+    formHeaders,
+    updateFormHeaders,
+    addWorkExperience,
+    workExperienceIds,
+    educationIds,
+  } = useCv(
+    useShallow((state) => {
+      return {
+        formHeaders: state.formHeaders,
+        updateFormHeaders: state.updateFormHeaders,
+        addWorkExperience: state.addWorkExperience,
+        workExperienceIds: state.workExperience.map((el) => {
+          return {
+            id: el.id,
+            type: el.type,
+          }
+        }),
+        educationIds: state.education.map((el) => {
+          return {
+            id: el.id,
+            type: el.type,
+          }
+        }),
+      }
+    }),
+  )
   return (
     <Box
       sx={{
@@ -32,40 +59,17 @@ export default function Editor({ isSmallWidth }: { isSmallWidth: boolean }) {
         sx={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}
         header={
           <TextField
-            value={cvState.formHeaders['workExperience']}
+            value={formHeaders['workExperience']}
             onChange={(el) => {
-              cvState.updateFormHeaders('workExperience', el.target.value)
+              updateFormHeaders('workExperience', el.target.value)
             }}
           />
         }
       >
-        {cvState.workExperience.map((el) => {
-          const header = (
-            <Box component={'section'}>
-              <Typography>{el.tittel + '  hos ' + el.institusjon}</Typography>
-              <Typography>{el.fra + ' - ' + el.til}</Typography>
-            </Box>
-          )
-          return (
-            <ClosableTab
-              key={el.id + '-editor'}
-              sx={{ border: '1px solid  rgba(172, 172, 172, 1)' }}
-              header={header}
-            >
-              <Experience
-                type="workExperience"
-                id={el.id}
-                key={el.id}
-                label1="Jobbtittel"
-                label2="Ansetter"
-                label3="Fra - til"
-                label4="By"
-                label5="Beskrivelse"
-              ></Experience>
-            </ClosableTab>
-          )
+        {workExperienceIds.map((el) => {
+          return <ExperienceCard identifier={el} />
         })}
-        <Button onClick={() => cvState.addWorkExperience('workExperience')}>
+        <Button onClick={() => addWorkExperience('workExperience')}>
           Add experience
         </Button>
       </ClosableTab>
@@ -73,40 +77,17 @@ export default function Editor({ isSmallWidth }: { isSmallWidth: boolean }) {
       <ClosableTab
         header={
           <TextField
-            value={cvState.formHeaders['education']}
+            value={formHeaders['education']}
             onChange={(el) => {
-              cvState.updateFormHeaders('education', el.target.value)
+              updateFormHeaders('education', el.target.value)
             }}
           />
         }
       >
-        {cvState.education.map((el) => {
-          const header = (
-            <Box component={'section'}>
-              <Typography>{el.tittel + '  på ' + el.institusjon}</Typography>
-              <Typography>{el.fra + ' - ' + el.til}</Typography>
-            </Box>
-          )
-          return (
-            <ClosableTab
-              key={el.id + '-Editor'}
-              sx={{ border: '1px solid  rgba(172, 172, 172, 1)' }}
-              header={header}
-            >
-              <Experience
-                type="education"
-                id={el.id}
-                key={el.id}
-                label1="Studie"
-                label2="Institusjon"
-                label3="Fra - til"
-                label4="By"
-                label5="Beskrivelse"
-              ></Experience>
-            </ClosableTab>
-          )
-        })}
-        <Button onClick={() => cvState.addWorkExperience('education')}>
+        {educationIds.map((el) => (
+          <ExperienceCard identifier={el}></ExperienceCard>
+        ))}
+        <Button onClick={() => addWorkExperience('education')}>
           Add education
         </Button>
       </ClosableTab>

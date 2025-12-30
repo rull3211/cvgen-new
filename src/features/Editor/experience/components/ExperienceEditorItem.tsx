@@ -1,7 +1,7 @@
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider'
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs'
-import styles from '../editor.module.scss'
-import LabelWrapper from './LabelWrapper'
+import styles from '../../editor.module.scss'
+import LabelWrapper from '../../components/LabelWrapper'
 import type { CvState, ExperienceKey } from '@/hooks/useCv'
 import { useCv } from '@/hooks/useCv'
 import DebouncedTextField from '@/components/debouncedTextfield/DebouncedTextField'
@@ -19,7 +19,7 @@ interface Props {
   id: string
 }
 
-export default function Experience(props: Props) {
+export default function ExperienceEditorItem(props: Props) {
   const isSmall = useIsSmallWidth(680)
   const updateWorkExperience = useCv(
     useShallow((state) => {

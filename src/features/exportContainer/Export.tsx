@@ -7,12 +7,20 @@ import SkillContent from '../pdfContents/SkillsContent'
 import { a4Height } from '@/constants'
 import { useCv } from '@/hooks/useCv'
 import { usePagination } from '@/hooks/usePagination'
-
+import { useShallow } from 'zustand/shallow'
 interface Props {
   ref: React.RefObject<HTMLDivElement | null>
 }
 export default function Export(props: Props) {
-  const { leftPages, rightPages, pageNumber } = usePagination()
+  const { leftPages, rightPages, pageNumber } = usePagination(
+    useShallow((state) => {
+      return {
+        leftPages: state.leftPages,
+        rightPages: state.rightPages,
+        pageNumber: state.pageNumber,
+      }
+    }),
+  )
   const numberOfPages = Math.max(pageNumber.left, pageNumber.right) + 1
   const cv = useCv()
 
