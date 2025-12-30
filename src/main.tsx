@@ -5,12 +5,15 @@ import {
   createRootRoute,
   createRoute,
   createRouter,
+  redirect,
+  Outlet,
 } from '@tanstack/react-router'
 
 import './styles.css'
 import { useAuth } from './hooks/useAuth.ts'
 import Login from './features/auth/Login.tsx'
-import CvAppLayout from './features/cvAppLayout/CvAppLayout.tsx'
+import CvListPage from './features/cvList/CvListPage.tsx'
+import CvEditor from './features/cvAppLayout/CvEditor.tsx'
 
 // Auth layout component
 function AuthLayout() {
@@ -19,7 +22,7 @@ function AuthLayout() {
   if (loading) return <div>Loading...</div>
   if (!user) return <Login />
 
-  return <CvAppLayout />
+  return <Outlet />
 }
 
 // Define routes
@@ -30,10 +33,24 @@ const rootRoute = createRootRoute({
 const indexRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/',
-  component: AuthLayout,
+  beforeLoad: () => {
+    throw redirect({ to: '/cvs' })
+  },
 })
 
-const routeTree = rootRoute.addChildren([indexRoute])
+const cvsRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/cvs',
+  component: CvListPage,
+})
+
+const cvEditorRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/cvs/$cvId',
+  component: CvEditor,
+})
+
+const routeTree = rootRoute.addChildren([indexRoute, cvsRoute, cvEditorRoute])
 
 const router = createRouter({
   routeTree,

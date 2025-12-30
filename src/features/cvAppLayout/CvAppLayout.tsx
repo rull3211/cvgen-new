@@ -2,21 +2,14 @@ import useIsSmallWidth from '@/hooks/useIsSmallWidth'
 import Editor from '../Editor/Editor'
 import Preview from '../preview/Preview'
 import { Box, Toolbar } from '@mui/material'
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { motion } from 'motion/react'
-import { useCv } from '@/hooks/useCv'
+import { useNavigate } from '@tanstack/react-router'
 
 export default function CvAppLayout() {
   const isSmall = useIsSmallWidth(1400)
   const [mode, setMode] = useState<'Edit' | 'Preview'>('Edit')
-  const loadFromFirestore = useCv((state) => state.loadFromFirestore)
-
-  // Load CV data from Firestore on mount
-  useEffect(() => {
-    loadFromFirestore().catch((err) => {
-      console.error('Failed to load CV from Firestore:', err)
-    })
-  }, [loadFromFirestore])
+  const navigate = useNavigate()
 
   return (
     <main
@@ -28,6 +21,31 @@ export default function CvAppLayout() {
         gap: '1rem',
       }}
     >
+      {/* Back to CV List button - always visible */}
+      <div
+        style={{
+          padding: '1rem',
+          width: '100%',
+        }}
+      >
+        <button
+          onClick={() => navigate({ to: '/cvs' })}
+          style={{
+            background: 'white',
+            border: '1px solid #ddd',
+            borderRadius: '0.5rem',
+            padding: '0.5rem 1rem',
+            cursor: 'pointer',
+            fontSize: '0.9rem',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.5rem',
+          }}
+        >
+          ← Back to CV List
+        </button>
+      </div>
+
       {isSmall && (
         <Toolbar
           sx={{

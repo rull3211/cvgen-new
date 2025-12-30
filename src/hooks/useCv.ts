@@ -24,6 +24,7 @@ export type CvState = {
   skills: Array<Skill>
   formHeaders: Record<string, string>
   _isLoading: boolean // Internal flag to prevent writes during load
+  _cvId: string | null // Current CV ID being edited
 }
 type CvActions = {
   setState: (newState: CvState) => void
@@ -51,8 +52,9 @@ type CvActions = {
     id: string,
   ) => void
   updateFormHeaders: (header: string, value: string) => void
-  loadFromFirestore: () => Promise<void>
+  loadFromFirestore: (cvId: string) => Promise<void>
   deleteFromFirestore: () => Promise<void>
+  setCvId: (cvId: string) => void
 }
 export interface Summary {
   id: string
@@ -139,6 +141,7 @@ const initialState: CvState = {
   },
   skills: [{ type: 'skill', content: '', id: crypto.randomUUID(), level: '1' }],
   _isLoading: false,
+  _cvId: null,
 }
 
 export const useCv = create(
@@ -151,33 +154,49 @@ export const useCv = create(
     // -------------------------------
     // State actions
     // -------------------------------
-    setState: (newState) => {
-      set(() => newState)
+    setCvId: (cvId) => {
+      set((state) => {
+        state._cvId = cvId
+      })
+    },
 
-      if (!isLoadingFromFirestore) {
+    setState: (newState) => {
+      set((state) => {
+        Object.assign(state, newState)
+      })
+
+      const cvId = useCv.getState()._cvId
+      if (!isLoadingFromFirestore && cvId) {
         if (newState.summary)
-          scheduleBatchWrite({ path: 'summary', data: newState.summary })
+          scheduleBatchWrite({ path: 'summary', data: newState.summary, cvId })
         if (newState.workExperience)
           scheduleBatchWrite({
             path: 'workExperience',
             data: newState.workExperience,
+            cvId,
           })
         if (newState.education)
-          scheduleBatchWrite({ path: 'education', data: newState.education })
+          scheduleBatchWrite({
+            path: 'education',
+            data: newState.education,
+            cvId,
+          })
         if (newState.personalDetails)
           scheduleBatchWrite({
             path: 'personalDetails',
             data: newState.personalDetails,
+            cvId,
           })
         if (newState.skills)
-          scheduleBatchWrite({ path: 'skills', data: newState.skills })
+          scheduleBatchWrite({ path: 'skills', data: newState.skills, cvId })
         if (newState.formHeaders)
           scheduleBatchWrite({
             path: 'formHeaders',
             data: newState.formHeaders,
+            cvId,
           })
         if (newState.order)
-          scheduleBatchWrite({ path: 'order', data: newState.order })
+          scheduleBatchWrite({ path: 'order', data: newState.order, cvId })
       }
     },
 
@@ -185,10 +204,12 @@ export const useCv = create(
       set((state) => {
         const newExp = createEmptyExperience('workExperience')
         state[experience].push(newExp)
-        if (!state._isLoading && !isLoadingFromFirestore) {
+        const cvId = state._cvId
+        if (!state._isLoading && !isLoadingFromFirestore && cvId) {
           scheduleBatchWrite({
             path: experience,
             data: state[experience].map((e) => ({ ...e })),
+            cvId,
           })
         }
       })
@@ -203,10 +224,12 @@ export const useCv = create(
           level: '1',
         }
         state.skills.push(newSkill)
-        if (!state._isLoading && !isLoadingFromFirestore) {
+        const cvId = state._cvId
+        if (!state._isLoading && !isLoadingFromFirestore && cvId) {
           scheduleBatchWrite({
             path: 'skills',
             data: state.skills.map((s) => ({ ...s })),
+            cvId,
           })
         }
       })
@@ -217,10 +240,12 @@ export const useCv = create(
         const item = state.summary.find((el) => el.id === id)
         if (item) {
           item[field] = value
-          if (!state._isLoading && !isLoadingFromFirestore) {
+          const cvId = state._cvId
+          if (!state._isLoading && !isLoadingFromFirestore && cvId) {
             scheduleBatchWrite({
               path: 'summary',
               data: state.summary.map((s) => ({ ...s })),
+              cvId,
             })
           }
         }
@@ -232,10 +257,12 @@ export const useCv = create(
         const item = state[experience].find((el) => el.id === id)
         if (item) {
           item[field] = value
-          if (!state._isLoading && !isLoadingFromFirestore) {
+          const cvId = state._cvId
+          if (!state._isLoading && !isLoadingFromFirestore && cvId) {
             scheduleBatchWrite({
               path: experience,
               data: state[experience].map((e) => ({ ...e })),
+              cvId,
             })
           }
         }
@@ -247,10 +274,12 @@ export const useCv = create(
         const item = state.skills.find((el) => el.id === id)
         if (item) {
           item[field] = value
-          if (!state._isLoading && !isLoadingFromFirestore) {
+          const cvId = state._cvId
+          if (!state._isLoading && !isLoadingFromFirestore && cvId) {
             scheduleBatchWrite({
               path: 'skills',
               data: state.skills.map((s) => ({ ...s })),
+              cvId,
             })
           }
         }
@@ -262,10 +291,12 @@ export const useCv = create(
         const item = state.personalDetails.find((el) => el.id === id)
         if (item) {
           item[field] = value
-          if (!state._isLoading && !isLoadingFromFirestore) {
+          const cvId = state._cvId
+          if (!state._isLoading && !isLoadingFromFirestore && cvId) {
             scheduleBatchWrite({
               path: 'personalDetails',
               data: state.personalDetails.map((p) => ({ ...p })),
+              cvId,
             })
           }
         }
@@ -275,10 +306,12 @@ export const useCv = create(
     updateFormHeaders: (header, value) => {
       set((state) => {
         state.formHeaders[header] = value
-        if (!state._isLoading && !isLoadingFromFirestore) {
+        const cvId = state._cvId
+        if (!state._isLoading && !isLoadingFromFirestore && cvId) {
           scheduleBatchWrite({
             path: 'formHeaders',
             data: { ...state.formHeaders },
+            cvId,
           })
         }
       })
@@ -287,12 +320,12 @@ export const useCv = create(
     // -------------------------------
     // Firestore helpers
     // -------------------------------
-    loadFromFirestore: async () => {
+    loadFromFirestore: async (cvId: string) => {
       const auth = getAuth()
       const user = auth.currentUser
       if (!user) throw new Error('Not authenticated')
 
-      const ref = doc(db, `users/${user.uid}/cvs/main`)
+      const ref = doc(db, `users/${user.uid}/cvs/${cvId}`)
       const snap = await getDoc(ref)
       if (snap.exists()) {
         // Set module flag to prevent any writes
@@ -314,6 +347,7 @@ export const useCv = create(
           state.skills = data.skills || state.skills
           state.formHeaders = data.formHeaders || state.formHeaders
           state._isLoading = false
+          state._cvId = cvId
         })
 
         // Clear again after loading and reset flag
@@ -327,7 +361,10 @@ export const useCv = create(
       const user = auth.currentUser
       if (!user) throw new Error('Not authenticated')
 
-      const ref = doc(db, `users/${user.uid}/cvs/main`)
+      const cvId = useCv.getState()._cvId
+      if (!cvId) throw new Error('No CV loaded')
+
+      const ref = doc(db, `users/${user.uid}/cvs/${cvId}`)
       await deleteDoc(ref).then(() => {
         // Set module flag to prevent writes
         isLoadingFromFirestore = true
