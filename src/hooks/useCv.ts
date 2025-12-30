@@ -151,7 +151,35 @@ export const useCv = create(
     // -------------------------------
     // State actions
     // -------------------------------
-    setState: (newState) => set(() => newState),
+    setState: (newState) => {
+      set(() => newState)
+
+      if (!isLoadingFromFirestore) {
+        if (newState.summary)
+          scheduleBatchWrite({ path: 'summary', data: newState.summary })
+        if (newState.workExperience)
+          scheduleBatchWrite({
+            path: 'workExperience',
+            data: newState.workExperience,
+          })
+        if (newState.education)
+          scheduleBatchWrite({ path: 'education', data: newState.education })
+        if (newState.personalDetails)
+          scheduleBatchWrite({
+            path: 'personalDetails',
+            data: newState.personalDetails,
+          })
+        if (newState.skills)
+          scheduleBatchWrite({ path: 'skills', data: newState.skills })
+        if (newState.formHeaders)
+          scheduleBatchWrite({
+            path: 'formHeaders',
+            data: newState.formHeaders,
+          })
+        if (newState.order)
+          scheduleBatchWrite({ path: 'order', data: newState.order })
+      }
+    },
 
     addWorkExperience: (experience) => {
       set((state) => {

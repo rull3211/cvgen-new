@@ -1,4 +1,16 @@
-import { Box, Button, Paper, Typography } from '@mui/material'
+import {
+  Box,
+  Button,
+  Paper,
+  Typography,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions,
+  Snackbar,
+  Alert,
+} from '@mui/material'
 import { useEffect, useRef, useState } from 'react'
 import PDFPagination from '../paginatedTest/PaginatedApp'
 import Export from '../exportContainer/Export'
@@ -18,6 +30,7 @@ import { useShallow } from 'zustand/shallow'
 
 export default function Preview() {
   const { user } = useAuth()
+  const deleteFromFirestore = useCv((state) => state.deleteFromFirestore)
   const { leftPages, rightPages, pageNumber } = usePagination(
     useShallow((state) => ({
       leftPages: state.leftPages,
@@ -28,8 +41,38 @@ export default function Preview() {
   const numberOfPages = Math.max(pageNumber.left, pageNumber.right) + 1
   const [page, setPage] = useState(0)
   const [startExport, setExport] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false)
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false)
+  const [snackbar, setSnackbar] = useState<{
+    open: boolean
+    message: string
+    severity: 'success' | 'error'
+  }>({
+    open: false,
+    message: '',
+    severity: 'success',
+  })
+
   function handlePageAction(num: number) {
     setPage((page + num + numberOfPages) % numberOfPages)
+  }
+
+  const handleDeleteCV = async () => {
+    setShowDeleteDialog(false)
+    setIsDeleting(true)
+    try {
+      await deleteFromFirestore()
+      setSnackbar({ open: true, message: 'CV slettet!', severity: 'success' })
+    } catch (error) {
+      console.error('Failed to delete CV:', error)
+      setSnackbar({
+        open: true,
+        message: 'Kunne ikke slette CV. Prøv igjen.',
+        severity: 'error',
+      })
+    } finally {
+      setIsDeleting(false)
+    }
   }
 
   const exportPreview = async () => {
@@ -89,15 +132,18 @@ export default function Preview() {
       personalDetails: state.personalDetails,
     })),
   )
-  const right = cvState.order.right.map((el) => {
+  const right = cvState.order.right.flatMap((el) => {
     const pages = rightPages[el][page]
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-    if (!pages) return null
+    if (!pages) return []
 
-    return pages.map((index) => {
+    return pages.flatMap((index) => {
       const render = cvState[el][index]
+      // Guard against undefined render
+      if (!render) return []
+
       try {
-        if (render?.type === 'summary') {
+        if (render.type === 'summary') {
           return <SummaryContent key={render.id} text={render.content} />
         } else {
           const { by, tittel, institusjon, fra, til, beskrivelse } = render
@@ -127,6 +173,7 @@ export default function Preview() {
         console.log(cvState)
         console.log(index)
         console.log(el)
+        return []
       }
     })
   })
@@ -137,10 +184,12 @@ export default function Preview() {
 
     return (
       <section key={el} className={styles[el]}>
-        {pages.map((index) => {
+        {pages.flatMap((index) => {
           const render = cvState[el][index]
+          // Guard against undefined render
+          if (!render) return []
 
-          if (render?.type === 'personalDetails') {
+          if (render.type === 'personalDetails') {
             return <PersonalDetailsContent key={render.id} element={render} />
           } else {
             if (
@@ -260,7 +309,53 @@ export default function Preview() {
           >
             Eksporter
           </Button>
+
+          <Button
+            onClick={() => setShowDeleteDialog(true)}
+            disabled={isDeleting}
+            color="error"
+            variant="outlined"
+            sx={{ marginLeft: '1rem' }}
+          >
+            {isDeleting ? 'Sletter...' : 'Slett CV'}
+          </Button>
         </Paper>
+
+        {/* Delete Confirmation Dialog */}
+        <Dialog
+          open={showDeleteDialog}
+          onClose={() => setShowDeleteDialog(false)}
+        >
+          <DialogTitle>Slett CV</DialogTitle>
+          <DialogContent>
+            <DialogContentText>
+              Er du sikker på at du vil slette hele CV-en? Dette kan ikke
+              angres.
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setShowDeleteDialog(false)}>Avbryt</Button>
+            <Button onClick={handleDeleteCV} color="error" autoFocus>
+              Slett
+            </Button>
+          </DialogActions>
+        </Dialog>
+
+        {/* Snackbar for feedback */}
+        <Snackbar
+          open={snackbar.open}
+          autoHideDuration={4000}
+          onClose={() => setSnackbar({ ...snackbar, open: false })}
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+        >
+          <Alert
+            onClose={() => setSnackbar({ ...snackbar, open: false })}
+            severity={snackbar.severity}
+            sx={{ width: '100%' }}
+          >
+            {snackbar.message}
+          </Alert>
+        </Snackbar>
       </div>
     </>
   )

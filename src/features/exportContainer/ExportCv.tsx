@@ -3,7 +3,16 @@ import { useCv } from '@/hooks/useCv'
 import { useShallow } from 'zustand/shallow'
 
 const ExportCv = () => {
-  const { summary, workExperience, education, personalDetails, order, skills, setState } = useCv(
+  const {
+    summary,
+    workExperience,
+    education,
+    personalDetails,
+    order,
+    skills,
+    formHeaders,
+    setState,
+  } = useCv(
     useShallow((state) => ({
       summary: state.summary,
       workExperience: state.workExperience,
@@ -11,6 +20,7 @@ const ExportCv = () => {
       personalDetails: state.personalDetails,
       order: state.order,
       skills: state.skills,
+      formHeaders: state.formHeaders,
       setState: state.setState,
     })),
   )
@@ -23,6 +33,7 @@ const ExportCv = () => {
       personalDetails,
       order,
       skills,
+      formHeaders,
     }
     // 2. Convert JSON object to a string
     const jsonString = JSON.stringify(dataToDownload, null, 2)
