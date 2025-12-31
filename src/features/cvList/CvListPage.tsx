@@ -1,15 +1,30 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from '@tanstack/react-router'
+import {
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions,
+  Button,
+  TextField,
+  CircularProgress,
+} from '@mui/material'
 import { useCvList } from '@/hooks/useCvList'
+import { useSnackbar } from '@/hooks/useSnackbar'
 import type { CvMetadata } from '@/types/cvMetadata'
-import './cvList.module.scss'
+import styles from './cvList.module.scss'
 
 export default function CvListPage() {
   const navigate = useNavigate()
   const { cvs, loading, createCv, deleteCv, loadCvList } = useCvList()
+  const showSnackbar = useSnackbar((state) => state.showSnackbar)
   const [showCreateDialog, setShowCreateDialog] = useState(false)
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false)
+  const [cvToDelete, setCvToDelete] = useState<CvMetadata | null>(null)
   const [newCvName, setNewCvName] = useState('')
   const [creating, setCreating] = useState(false)
+  const [deleting, setDeleting] = useState(false)
 
   // Reload CV list when component mounts (e.g., when returning from editor)
   useEffect(() => {
@@ -28,7 +43,7 @@ export default function CvListPage() {
       navigate({ to: `/cvs/${cvId}` })
     } catch (error) {
       console.error('Error creating CV:', error)
-      alert('Failed to create CV. Please try again.')
+      showSnackbar('Kunne ikke opprette CV. Prøv igjen.', 'error')
     } finally {
       setCreating(false)
     }
@@ -38,33 +53,49 @@ export default function CvListPage() {
     navigate({ to: `/cvs/${cvId}` })
   }
 
-  const handleDeleteCv = async (cv: CvMetadata, e: React.MouseEvent) => {
+  const handleDeleteClick = (cv: CvMetadata, e: React.MouseEvent) => {
     e.stopPropagation()
-    if (!confirm(`Are you sure you want to delete "${cv.name}"?`)) return
+    setCvToDelete(cv)
+    setShowDeleteDialog(true)
+  }
 
+  const handleConfirmDelete = async () => {
+    if (!cvToDelete) return
+
+    setDeleting(true)
     try {
-      await deleteCv(cv.id)
+      await deleteCv(cvToDelete.id)
+      showSnackbar('CV slettet!', 'success')
+      setShowDeleteDialog(false)
+      setCvToDelete(null)
     } catch (error) {
       console.error('Error deleting CV:', error)
-      alert('Failed to delete CV. Please try again.')
+      showSnackbar('Kunne ikke slette CV. Prøv igjen.', 'error')
+    } finally {
+      setDeleting(false)
     }
+  }
+
+  const handleCancelDelete = () => {
+    setShowDeleteDialog(false)
+    setCvToDelete(null)
   }
 
   if (loading) {
     return (
-      <div className="cv-list-page loading">
-        <div className="loading-spinner">Loading your CVs...</div>
+      <div className={`${styles['cv-list-page']} ${styles.loading}`}>
+        <div className={styles['loading-spinner']}>Loading your CVs...</div>
       </div>
     )
   }
 
   return (
-    <div className="cv-list-page">
-      <div className="cv-list-container">
-        <header className="cv-list-header">
+    <div className={styles['cv-list-page']}>
+      <div className={styles['cv-list-container']}>
+        <header className={styles['cv-list-header']}>
           <h1>My CVs</h1>
           <button
-            className="create-cv-button"
+            className={styles['create-cv-button']}
             onClick={() => setShowCreateDialog(true)}
           >
             + Create New CV
@@ -72,26 +103,26 @@ export default function CvListPage() {
         </header>
 
         {cvs.length === 0 ? (
-          <div className="empty-state">
+          <div className={styles['empty-state']}>
             <p>You don't have any CVs yet.</p>
             <button
-              className="create-cv-button-large"
+              className={styles['create-cv-button-large']}
               onClick={() => setShowCreateDialog(true)}
             >
               Create Your First CV
             </button>
           </div>
         ) : (
-          <div className="cv-list">
+          <div className={styles['cv-list']}>
             {cvs.map((cv) => (
               <div
                 key={cv.id}
-                className="cv-card"
+                className={styles['cv-card']}
                 onClick={() => handleSelectCv(cv.id)}
               >
-                <div className="cv-card-content">
-                  <h2 className="cv-name">{cv.name}</h2>
-                  <div className="cv-metadata">
+                <div className={styles['cv-card-content']}>
+                  <h2 className={styles['cv-name']}>{cv.name}</h2>
+                  <div className={styles['cv-metadata']}>
                     <span>
                       Created: {new Date(cv.createdAt).toLocaleDateString()}
                     </span>
@@ -101,9 +132,9 @@ export default function CvListPage() {
                   </div>
                 </div>
                 <button
-                  className="delete-button"
-                  onClick={(e) => handleDeleteCv(cv, e)}
-                  title="Delete CV"
+                  className={styles['delete-button']}
+                  onClick={(e) => handleDeleteClick(cv, e)}
+                  title="Slett CV"
                 >
                   🗑️
                 </button>
@@ -113,44 +144,86 @@ export default function CvListPage() {
         )}
       </div>
 
-      {showCreateDialog && (
-        <div
-          className="dialog-overlay"
-          onClick={() => setShowCreateDialog(false)}
-        >
-          <div className="dialog" onClick={(e) => e.stopPropagation()}>
-            <h2>Create New CV</h2>
-            <form onSubmit={handleCreateCv}>
-              <label>
-                CV Name:
-                <input
-                  type="text"
-                  value={newCvName}
-                  onChange={(e) => setNewCvName(e.target.value)}
-                  placeholder="e.g., Software Engineer CV"
-                  autoFocus
-                  required
-                />
-              </label>
-              <div className="dialog-actions">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowCreateDialog(false)
-                    setNewCvName('')
-                  }}
-                  disabled={creating}
-                >
-                  Cancel
-                </button>
-                <button type="submit" disabled={creating || !newCvName.trim()}>
-                  {creating ? 'Creating...' : 'Create'}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+      {/* Create CV Dialog */}
+      <Dialog
+        open={showCreateDialog}
+        onClose={() => {
+          setShowCreateDialog(false)
+          setNewCvName('')
+        }}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle>Opprett ny CV</DialogTitle>
+        <form onSubmit={handleCreateCv}>
+          <DialogContent>
+            <TextField
+              autoFocus
+              required
+              margin="dense"
+              label="CV-navn"
+              type="text"
+              fullWidth
+              variant="outlined"
+              value={newCvName}
+              onChange={(e) => setNewCvName(e.target.value)}
+              placeholder="f.eks. Programvareutvikler CV"
+              disabled={creating}
+            />
+          </DialogContent>
+          <DialogActions>
+            <Button
+              onClick={() => {
+                setShowCreateDialog(false)
+                setNewCvName('')
+              }}
+              disabled={creating}
+            >
+              Avbryt
+            </Button>
+            <Button
+              type="submit"
+              variant="contained"
+              disabled={creating || !newCvName.trim()}
+              startIcon={creating ? <CircularProgress size={20} /> : null}
+            >
+              {creating ? 'Oppretter...' : 'Opprett'}
+            </Button>
+          </DialogActions>
+        </form>
+      </Dialog>
+
+      {/* Delete CV Dialog */}
+      <Dialog
+        open={showDeleteDialog}
+        onClose={handleCancelDelete}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle>Slett CV</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Er du sikker på at du vil slette{' '}
+            <strong>"{cvToDelete?.name}"</strong>?
+            <br />
+            Dette kan ikke angres.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCancelDelete} disabled={deleting}>
+            Avbryt
+          </Button>
+          <Button
+            onClick={handleConfirmDelete}
+            color="error"
+            variant="contained"
+            disabled={deleting}
+            startIcon={deleting ? <CircularProgress size={20} /> : null}
+          >
+            {deleting ? 'Sletter...' : 'Slett'}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </div>
   )
 }

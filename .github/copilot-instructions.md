@@ -28,6 +28,7 @@ Keep this short, actionable and specific to this codebase.
 
 - Project-specific conventions and patterns:
   - Import alias `@/*` maps to `./src/*` (see `tsconfig.json`). Prefer `@/` imports for internal modules.
+  - CSS Modules: files ending in `.module.scss` or `.module.css` must be imported as `import styles from './file.module.scss'` and used as `className={styles['class-name']}` or `className={styles.className}`. Never use side-effect imports like `import './file.module.scss'`.
   - IDs: code uses `crypto.randomUUID()` to create stable unique ids across components.
   - Language/field names: many model fields use Norwegian keys (e.g. `tittel`, `institusjon`, `fornavn`). Preserve them when touching the model and Firestore documents.
   - Side effects: `scheduleBatchWrite` is used for background persistence. Avoid replacing it without understanding debounce/batch semantics.

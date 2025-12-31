@@ -8,8 +8,6 @@ import {
   DialogContent,
   DialogContentText,
   DialogActions,
-  Snackbar,
-  Alert,
 } from '@mui/material'
 import { useEffect, useRef, useState } from 'react'
 import PDFPagination from '../paginatedTest/PaginatedApp'
@@ -27,9 +25,11 @@ import { usePagination } from '@/hooks/usePagination'
 import { useAuth } from '@/hooks/useAuth'
 import { useScaleOnResize } from './hooks/useScale'
 import { useShallow } from 'zustand/shallow'
+import { useSnackbar } from '@/hooks/useSnackbar'
 
 export default function Preview() {
   const { user } = useAuth()
+  const showSnackbar = useSnackbar((state) => state.showSnackbar)
   const deleteFromFirestore = useCv((state) => state.deleteFromFirestore)
   const { leftPages, rightPages, pageNumber } = usePagination(
     useShallow((state) => ({
@@ -43,15 +43,6 @@ export default function Preview() {
   const [startExport, setExport] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
-  const [snackbar, setSnackbar] = useState<{
-    open: boolean
-    message: string
-    severity: 'success' | 'error'
-  }>({
-    open: false,
-    message: '',
-    severity: 'success',
-  })
 
   function handlePageAction(num: number) {
     setPage((page + num + numberOfPages) % numberOfPages)
@@ -62,14 +53,10 @@ export default function Preview() {
     setIsDeleting(true)
     try {
       await deleteFromFirestore()
-      setSnackbar({ open: true, message: 'CV slettet!', severity: 'success' })
+      showSnackbar('CV slettet!', 'success')
     } catch (error) {
       console.error('Failed to delete CV:', error)
-      setSnackbar({
-        open: true,
-        message: 'Kunne ikke slette CV. Prøv igjen.',
-        severity: 'error',
-      })
+      showSnackbar('Kunne ikke slette CV. Prøv igjen.', 'error')
     } finally {
       setIsDeleting(false)
     }
@@ -340,22 +327,6 @@ export default function Preview() {
             </Button>
           </DialogActions>
         </Dialog>
-
-        {/* Snackbar for feedback */}
-        <Snackbar
-          open={snackbar.open}
-          autoHideDuration={4000}
-          onClose={() => setSnackbar({ ...snackbar, open: false })}
-          anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-        >
-          <Alert
-            onClose={() => setSnackbar({ ...snackbar, open: false })}
-            severity={snackbar.severity}
-            sx={{ width: '100%' }}
-          >
-            {snackbar.message}
-          </Alert>
-        </Snackbar>
       </div>
     </>
   )

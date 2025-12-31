@@ -14,6 +14,7 @@ import { useAuth } from './hooks/useAuth.ts'
 import Login from './features/auth/Login.tsx'
 import CvListPage from './features/cvList/CvListPage.tsx'
 import CvEditor from './features/cvAppLayout/CvEditor.tsx'
+import GlobalSnackbar from './components/GlobalSnackbar.tsx'
 
 // Auth layout component
 function AuthLayout() {
@@ -22,7 +23,12 @@ function AuthLayout() {
   if (loading) return <div>Loading...</div>
   if (!user) return <Login />
 
-  return <Outlet />
+  return (
+    <>
+      <Outlet />
+      <GlobalSnackbar />
+    </>
+  )
 }
 
 // Define routes
