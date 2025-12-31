@@ -95,6 +95,7 @@ export default function Preview() {
       education: state.education,
       skills: state.skills,
       personalDetails: state.personalDetails,
+      formHeaders: state.formHeaders,
     })),
   )
   const right = cvState.order.right.flatMap((el) => {
@@ -116,8 +117,7 @@ export default function Preview() {
             (index === 0 && renderHasContent) ||
             (index === 0 && cvState[el].length > 1)
           ) {
-            const text =
-              render.type === 'workExperience' ? 'Arbeidserfaring' : 'Utdanning'
+            const text = cvState.formHeaders[render.type] || render.type
             return [
               <Typography
                 key={render.type}
@@ -158,9 +158,10 @@ export default function Preview() {
               (index === 0 && render.content) ||
               (index === 0 && cvState[el].length > 1)
             ) {
+              const text = cvState.formHeaders['skills'] || 'Ferdigheter'
               return [
                 <Typography key={'ferdigheter'} variant="h2">
-                  Ferdigheter
+                  {text}
                 </Typography>,
                 <SkillContent key={render.id} skill={render} />,
               ]
@@ -200,18 +201,23 @@ export default function Preview() {
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
-          gap: '1rem',
-          position: 'relative',
+          justifyContent: 'center',
+          flex: 1,
+          width: '100%',
+          height: '100%',
+          overflow: 'auto',
+          padding: '2rem 1rem',
         }}
       >
         <div
           style={{
             height: a4Height * scale + 'cm',
             width: a4width * scale + 'cm',
-            transformOrigin: 'top left',
+            transformOrigin: 'center center',
             display: 'flex',
             flexDirection: 'column',
             position: 'relative',
+            flexShrink: 0,
           }}
         >
           <div
