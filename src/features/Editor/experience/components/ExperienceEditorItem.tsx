@@ -1,11 +1,13 @@
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider'
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs'
-import styles from '../editor.module.scss'
-import LabelWrapper from './LabelWrapper'
+import styles from '../../editor.module.scss'
+import LabelWrapper from '../../components/LabelWrapper'
 import type { CvState, ExperienceKey } from '@/hooks/useCv'
 import { useCv } from '@/hooks/useCv'
 import DebouncedTextField from '@/components/debouncedTextfield/DebouncedTextField'
 import { StringDatePicker } from '@/components/datePicker/StringDatepicker'
+import useIsSmallWidth from '@/hooks/useIsSmallWidth'
+import { useShallow } from 'zustand/shallow'
 
 interface Props {
   label1: string
@@ -17,18 +19,28 @@ interface Props {
   id: string
 }
 
-export default function Experience(props: Props) {
-  const cv = useCv()
-  const workExperience = cv[props.type].find((el) => el.id === props.id)
+export default function ExperienceEditorItem(props: Props) {
+  const isSmall = useIsSmallWidth(680)
+  const updateWorkExperience = useCv(
+    useShallow((state) => {
+      return state.updateWorkExperience
+    }),
+  )
+  const workExperience = useCv(
+    useShallow((state) => {
+      return state[props.type].find((el) => el.id === props.id)
+    }),
+  )
+  const rowClassName = `${styles.row} ${isSmall && styles.small}`
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs}>
       <section className={styles.experience}>
-        <section className={styles.row}>
+        <section className={rowClassName}>
           <LabelWrapper id={props.id + props.label1} label={props.label1}>
             <DebouncedTextField
               id={props.id + props.label1}
               onChange={(el) => {
-                cv.updateWorkExperience(
+                updateWorkExperience(
                   props.type,
                   'tittel',
                   el.target.value,
@@ -43,7 +55,7 @@ export default function Experience(props: Props) {
             <DebouncedTextField
               id={props.id + props.label2}
               onChange={(el) =>
-                cv.updateWorkExperience(
+                updateWorkExperience(
                   props.type,
                   'institusjon',
                   el.target.value,
@@ -56,9 +68,12 @@ export default function Experience(props: Props) {
           </LabelWrapper>
         </section>
 
-        <section className={styles.row}>
+        <section className={rowClassName}>
           <LabelWrapper id={props.id + props.label3} label={props.label3}>
-            <section id={props.id + props.label3} className={styles.date}>
+            <section
+              id={props.id + props.label3}
+              className={`${styles.date} ${styles.small}`}
+            >
               <StringDatePicker
                 id={props.id + props.label3}
                 slots={{ openPickerIcon: () => null }}
@@ -66,7 +81,7 @@ export default function Experience(props: Props) {
                 views={['month', 'year']}
                 value={workExperience?.fra || ''}
                 onChange={(el) => {
-                  cv.updateWorkExperience(props.type, 'fra', el || '', props.id)
+                  updateWorkExperience(props.type, 'fra', el || '', props.id)
                 }}
               />
               <StringDatePicker
@@ -76,7 +91,7 @@ export default function Experience(props: Props) {
                 views={['month', 'year']}
                 value={workExperience?.til || ''}
                 onChange={(el) => {
-                  cv.updateWorkExperience(props.type, 'til', el || '', props.id)
+                  updateWorkExperience(props.type, 'til', el || '', props.id)
                 }}
               />
             </section>
@@ -85,7 +100,7 @@ export default function Experience(props: Props) {
             <DebouncedTextField
               id={props.id + props.label4}
               onChange={(el) =>
-                cv.updateWorkExperience(
+                updateWorkExperience(
                   props.type,
                   'by',
                   el.target.value,
@@ -97,12 +112,12 @@ export default function Experience(props: Props) {
             />
           </LabelWrapper>
         </section>
-        <section className={styles.row}>
+        <section className={rowClassName}>
           <LabelWrapper id={props.id + props.label5} label={props.label5}>
             <DebouncedTextField
               id={props.id + props.label5}
               onChange={(el) =>
-                cv.updateWorkExperience(
+                updateWorkExperience(
                   props.type,
                   'beskrivelse',
                   el.target.value,

@@ -1,7 +1,13 @@
 import { Typography } from '@mui/material'
 import styles from '../preview/PreviewStyles.module.scss'
 
-export default function SummaryContent({ text }: { text: string }) {
+export default function SummaryContent({
+  text,
+  header,
+}: {
+  text: string
+  header?: string
+}) {
   return (
     <section className={styles.summary}>
       {text && (
@@ -10,7 +16,7 @@ export default function SummaryContent({ text }: { text: string }) {
           className={styles.rightTitle}
           variant="h2"
         >
-          Oppsummering
+          {header || 'Oppsummering'}
         </Typography>
       )}
       <Typography sx={{ fontSize: '0.9rem', whiteSpace: 'pre-wrap' }}>

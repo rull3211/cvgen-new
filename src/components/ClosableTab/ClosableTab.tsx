@@ -1,10 +1,4 @@
-import {
-  Box,
-  IconButton,
-  Paper,
-  Typography,
-  type PaperProps,
-} from '@mui/material'
+import { Box, IconButton, Paper, type PaperProps } from '@mui/material'
 import { useState } from 'react'
 import ExpandLessIcon from '@mui/icons-material/ExpandLess'
 import type { ReactNode } from 'react'

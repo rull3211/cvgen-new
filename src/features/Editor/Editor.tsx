@@ -1,19 +1,52 @@
-import { Box, Button, TextField, Typography } from '@mui/material'
-import Experience from './components/Experience'
+import { Box, Button, TextField } from '@mui/material'
 import styles from './editor.module.scss'
-import PersoalDetails from './components/PersonalDetails'
+import PersoalDetails from './personalDetails/PersonalDetailsEditor'
 import SummaryEditor from './summary/Summary'
 import SkillsEditor from './SkillsEditor/SkillsEditor'
 import { useCv } from '@/hooks/useCv'
 import ClosableTab from '@/components/ClosableTab/ClosableTab'
+import { useShallow } from 'zustand/shallow'
+import ExperienceCard from './experience/ExperienceEditorCard'
+import { useMemo } from 'react'
 
-export default function Editor() {
-  const cvState = useCv()
+export default function Editor({ isSmallWidth }: { isSmallWidth: boolean }) {
+  const {
+    formHeaders,
+    updateFormHeaders,
+    addWorkExperience,
+    workExperience,
+    education,
+  } = useCv(
+    useShallow((state) => ({
+      formHeaders: state.formHeaders,
+      updateFormHeaders: state.updateFormHeaders,
+      addWorkExperience: state.addWorkExperience,
+      workExperience: state.workExperience,
+      education: state.education,
+    })),
+  )
+
+  const workExperienceIds = useMemo(
+    () =>
+      workExperience.map((el) => ({
+        id: el.id,
+        type: el.type,
+      })),
+    [workExperience],
+  )
+
+  const educationIds = useMemo(
+    () =>
+      education.map((el) => ({
+        id: el.id,
+        type: el.type,
+      })),
+    [education],
+  )
   return (
     <Box
       sx={{
-        maxWidth: '50%',
-        maxHeight: '100vh',
+        maxWidth: isSmallWidth ? '100%' : '50%',
         overflow: 'auto',
         display: 'flex',
         flexDirection: 'column',
@@ -26,47 +59,33 @@ export default function Editor() {
       <ClosableTab header={'Personalia'}>
         <PersoalDetails />
       </ClosableTab>
-      <ClosableTab header={'Oppsummering'}>
+      <ClosableTab
+        header={
+          <TextField
+            value={formHeaders['summary']}
+            onChange={(el) => {
+              updateFormHeaders('summary', el.target.value)
+            }}
+          />
+        }
+      >
         <SummaryEditor />
       </ClosableTab>
       <ClosableTab
         sx={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}
         header={
           <TextField
-            value={cvState.formHeaders['workExperience']}
+            value={formHeaders['workExperience']}
             onChange={(el) => {
-              cvState.updateFormHeaders('workExperience', el.target.value)
+              updateFormHeaders('workExperience', el.target.value)
             }}
           />
         }
       >
-        {cvState.workExperience.map((el) => {
-          const header = (
-            <Box component={'section'}>
-              <Typography>{el.tittel + '  hos ' + el.institusjon}</Typography>
-              <Typography>{el.fra + ' - ' + el.til}</Typography>
-            </Box>
-          )
-          return (
-            <ClosableTab
-              key={el.id + '-editor'}
-              sx={{ border: '1px solid  rgba(172, 172, 172, 1)' }}
-              header={header}
-            >
-              <Experience
-                type="workExperience"
-                id={el.id}
-                key={el.id}
-                label1="Jobbtittel"
-                label2="Ansetter"
-                label3="Fra - til"
-                label4="By"
-                label5="Beskrivelse"
-              ></Experience>
-            </ClosableTab>
-          )
+        {workExperienceIds.map((el) => {
+          return <ExperienceCard key={el.id} identifier={el} />
         })}
-        <Button onClick={() => cvState.addWorkExperience('workExperience')}>
+        <Button onClick={() => addWorkExperience('workExperience')}>
           Add experience
         </Button>
       </ClosableTab>
@@ -74,40 +93,17 @@ export default function Editor() {
       <ClosableTab
         header={
           <TextField
-            value={cvState.formHeaders['education']}
+            value={formHeaders['education']}
             onChange={(el) => {
-              cvState.updateFormHeaders('education', el.target.value)
+              updateFormHeaders('education', el.target.value)
             }}
           />
         }
       >
-        {cvState.education.map((el) => {
-          const header = (
-            <Box component={'section'}>
-              <Typography>{el.tittel + '  på ' + el.institusjon}</Typography>
-              <Typography>{el.fra + ' - ' + el.til}</Typography>
-            </Box>
-          )
-          return (
-            <ClosableTab
-              key={el.id + '-Editor'}
-              sx={{ border: '1px solid  rgba(172, 172, 172, 1)' }}
-              header={header}
-            >
-              <Experience
-                type="education"
-                id={el.id}
-                key={el.id}
-                label1="Studie"
-                label2="Institusjon"
-                label3="Fra - til"
-                label4="By"
-                label5="Beskrivelse"
-              ></Experience>
-            </ClosableTab>
-          )
-        })}
-        <Button onClick={() => cvState.addWorkExperience('education')}>
+        {educationIds.map((el) => (
+          <ExperienceCard key={el.id} identifier={el}></ExperienceCard>
+        ))}
+        <Button onClick={() => addWorkExperience('education')}>
           Add education
         </Button>
       </ClosableTab>

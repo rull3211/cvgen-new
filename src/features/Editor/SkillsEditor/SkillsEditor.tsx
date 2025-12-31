@@ -3,16 +3,29 @@ import LabelWrapper from '../components/LabelWrapper'
 import { useCv } from '@/hooks/useCv'
 import DebouncedTextField from '@/components/debouncedTextfield/DebouncedTextField'
 import ClosableTab from '@/components/ClosableTab/ClosableTab'
+import { useShallow } from 'zustand/shallow'
 
 export default function SkillsEditor() {
-  const cv = useCv()
+  const { skills, addSkill, updateSkills, formHeaders, updateFormHeaders } =
+    useCv(
+      useShallow((state) => {
+        return {
+          skills: state.skills,
+          addSkill: state.addSkill,
+          updateSkills: state.updateSkills,
+          formHeaders: state.formHeaders,
+          updateFormHeaders: state.updateFormHeaders,
+        }
+      }),
+    )
+
   return (
     <ClosableTab
       header={
         <TextField
-          value={cv.formHeaders['skills']}
+          value={formHeaders['skills']}
           onChange={(el) => {
-            cv.updateFormHeaders('skills', el.target.value)
+            updateFormHeaders('skills', el.target.value)
           }}
         />
       }
@@ -25,13 +38,13 @@ export default function SkillsEditor() {
           padding: '2rem',
         }}
       >
-        {cv.skills.map((skill) => {
+        {skills.map((skill) => {
           return (
             <LabelWrapper id={skill.id} key={skill.id} label={'Ferdigheter'}>
               <DebouncedTextField
                 id={skill.id}
                 onChange={(el) =>
-                  cv.updateSkills('content', el.target.value, skill.id)
+                  updateSkills('content', el.target.value, skill.id)
                 }
                 value={skill.content}
                 fullWidth
@@ -41,7 +54,7 @@ export default function SkillsEditor() {
         })}
       </Box>
 
-      <Button onClick={() => cv.addSkill()}>AddSkill</Button>
+      <Button onClick={() => addSkill()}>AddSkill</Button>
     </ClosableTab>
   )
 }

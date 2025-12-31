@@ -1,4 +1,4 @@
-import { Box, Button, Paper, Typography } from '@mui/material'
+import { Box, Button, Typography } from '@mui/material'
 import { useEffect, useRef, useState } from 'react'
 import PDFPagination from '../paginatedTest/PaginatedApp'
 import Export from '../exportContainer/Export'
@@ -6,30 +6,68 @@ import ExperienceContent from '../pdfContents/ExperienceContent'
 import PersonalDetailsContent from '../pdfContents/PersonalDetailsContent'
 import SummaryContent from '../pdfContents/SummaryContent'
 import SkillContent from '../pdfContents/SkillsContent'
-import ExportCv from '../exportContainer/ExportCv'
 import styles from './PreviewStyles.module.scss'
-import { a4Height, a4HeightInCm, a4WidthInCm, a4width } from '@/constants'
+import { a4Height, a4width } from '@/constants'
 import { useCv } from '@/hooks/useCv'
 import { exportPDF } from '@/hooks/exportPdf'
 import { usePagination } from '@/hooks/usePagination'
+import { useAuth } from '@/hooks/useAuth'
+import { useScaleOnResize } from './hooks/useScale'
+import { useShallow } from 'zustand/shallow'
+import { useExportTrigger } from '@/hooks/useExportTrigger'
 
 export default function Preview() {
-  const { leftPages, rightPages, pageNumber } = usePagination()
+  const { user } = useAuth()
+  const { shouldExport, resetExport } = useExportTrigger()
+  const { leftPages, rightPages, pageNumber } = usePagination(
+    useShallow((state) => ({
+      leftPages: state.leftPages,
+      rightPages: state.rightPages,
+      pageNumber: state.pageNumber,
+    })),
+  )
   const numberOfPages = Math.max(pageNumber.left, pageNumber.right) + 1
   const [page, setPage] = useState(0)
   const [startExport, setExport] = useState(false)
+
+  // Watch for export trigger from drawer
+  useEffect(() => {
+    if (shouldExport) {
+      setExport(true)
+      resetExport()
+    }
+  }, [shouldExport, resetExport])
+
   function handlePageAction(num: number) {
     setPage((page + num + numberOfPages) % numberOfPages)
   }
 
-  const exportPreview = () => {
+  const exportPreview = async () => {
     if (!previewRef.current) return
+
     const node = previewRef.current
     const html = node.outerHTML
+    const token = await user?.getIdToken()
+
+    const excludedTagSelectors = ['html', 'body']
+
     const cssText = Array.from(document.styleSheets)
       .map((sheet) => {
         try {
           return Array.from(sheet.cssRules)
+            .filter((rule) => {
+              // Include all non-style rules (like @media, @font-face)
+              if (!(rule instanceof CSSStyleRule)) return true
+
+              const selector = rule.selectorText || ''
+
+              // Check if selector is a pure tag (or list of tags)
+              const hasTagSelector = excludedTagSelectors.some((tag) =>
+                new RegExp(`\\b${tag}\\b(?![.#])`, 'i').test(selector),
+              )
+
+              return !hasTagSelector
+            })
             .map((rule) => rule.cssText)
             .join('\n')
         } catch (e) {
@@ -38,72 +76,98 @@ export default function Preview() {
       })
       .join('\n')
 
-    exportPDF(html, cssText).finally(() => setExport(false))
+    if (token) {
+      exportPDF(html, cssText, token).finally(() => setExport(false))
+    }
   }
+
   useEffect(() => {
     if (startExport) exportPreview()
   }, [startExport])
 
   const previewRef = useRef<HTMLDivElement>(null)
-  const vw = window.innerWidth
-  const vh = window.innerHeight
-  const scale = Math.min(1, Math.min(vw / a4WidthInCm, vh / a4HeightInCm) * 0.9)
-  const cv = useCv()
-  const right = cv.order.right.map((el) => {
+  const scale = useScaleOnResize()
+  const cvState = useCv(
+    useShallow((state) => ({
+      order: state.order,
+      summary: state.summary,
+      workExperience: state.workExperience,
+      education: state.education,
+      skills: state.skills,
+      personalDetails: state.personalDetails,
+      formHeaders: state.formHeaders,
+    })),
+  )
+  const right = cvState.order.right.flatMap((el) => {
     const pages = rightPages[el][page]
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-    if (!pages) return null
+    if (!pages) return []
 
-    return pages.map((index) => {
-      const render = cv[el][index]
-      if (render.type === 'summary') {
-        return <SummaryContent key={render.id} text={render.content} />
-      } else {
-        const { by, tittel, institusjon, fra, til, beskrivelse } = render
-        const renderHasContent =
-          !!by || !!tittel || !!institusjon || !!fra || !!til || !!beskrivelse
-        if (
-          (index === 0 && renderHasContent) ||
-          (index === 0 && cv[el].length > 1)
-        ) {
-          const text =
-            render.type === 'workExperience' ? 'Arbeidserfaring' : 'Utdanning'
-          return [
-            <Typography
-              key={render.type}
-              sx={{ fontSize: '1.5rem', fontWeight: 700 }}
-              variant="h2"
-            >
-              {text}
-            </Typography>,
-            <ExperienceContent key={render.id} element={render} />,
-          ]
+    return pages.flatMap((index) => {
+      const render = cvState[el][index]
+      if (!render) return []
+
+      try {
+        if (render.type === 'summary') {
+          return (
+            <SummaryContent
+              key={render.id}
+              text={render.content}
+              header={cvState.formHeaders['summary']}
+            />
+          )
+        } else {
+          const { by, tittel, institusjon, fra, til, beskrivelse } = render
+          const renderHasContent =
+            !!by || !!tittel || !!institusjon || !!fra || !!til || !!beskrivelse
+          if (
+            (index === 0 && renderHasContent) ||
+            (index === 0 && cvState[el].length > 1)
+          ) {
+            const text = cvState.formHeaders[render.type] || render.type
+            return [
+              <Typography
+                key={render.type}
+                sx={{ fontSize: '1.5rem', fontWeight: 700 }}
+                variant="h2"
+              >
+                {text}
+              </Typography>,
+              <ExperienceContent key={render.id} element={render} />,
+            ]
+          }
+          return <ExperienceContent key={render.id} element={render} />
         }
-        return <ExperienceContent key={render.id} element={render} />
+      } catch (er) {
+        console.log(render, er)
+        console.log(cvState)
+        console.log(index)
+        console.log(el)
+        return []
       }
     })
   })
-  const left = cv.order.left.map((el) => {
+  const left = cvState.order.left.map((el) => {
     const pages = leftPages[el][page]
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if (!pages) return null
 
     return (
       <section key={el} className={styles[el]}>
-        {pages.map((index) => {
-          const render = cv[el][index]
+        {pages.flatMap((index) => {
+          const render = cvState[el][index]
+          // Guard against undefined render
+          if (!render) return []
 
           if (render.type === 'personalDetails') {
             return <PersonalDetailsContent key={render.id} element={render} />
           } else {
-            console.log(cv[el])
             if (
               (index === 0 && render.content) ||
-              (index === 0 && cv[el].length > 1)
+              (index === 0 && cvState[el].length > 1)
             ) {
+              const text = cvState.formHeaders['skills'] || 'Ferdigheter'
               return [
                 <Typography key={'ferdigheter'} variant="h2">
-                  Ferdigheter
+                  {text}
                 </Typography>,
                 <SkillContent key={render.id} skill={render} />,
               ]
@@ -116,13 +180,15 @@ export default function Preview() {
   })
   return (
     <>
-      {startExport && <Export ref={previewRef}></Export>}
       <div
         style={{
+          position: 'absolute',
+          top: '-100%',
           transform: `scale(${scale})`,
           transformOrigin: 'top left',
           display: 'flex',
           flexDirection: 'column',
+          gap: '1rem',
         }}
       >
         <Box
@@ -133,10 +199,41 @@ export default function Preview() {
           }}
         >
           <PDFPagination></PDFPagination>
-
+        </Box>
+      </div>
+      {startExport && <Export ref={previewRef}></Export>}
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          flex: 1,
+          width: '100%',
+          height: '100%',
+          overflow: 'auto',
+          padding: '2rem 1rem',
+        }}
+      >
+        <div
+          style={{
+            height: a4Height * scale + 'cm',
+            width: a4width * scale + 'cm',
+            transformOrigin: 'center center',
+            display: 'flex',
+            flexDirection: 'column',
+            position: 'relative',
+            flexShrink: 0,
+          }}
+        >
           <div
-            style={{ transform: `scale(${scale})` }}
             className={styles.preview}
+            style={{
+              transformOrigin: 'top left',
+              transform: `scale(${scale})`,
+              minHeight: a4Height + 'cm',
+              minWidth: a4width + 'cm',
+            }}
           >
             <div className={styles.left}>
               <section>{left}</section>
@@ -145,44 +242,46 @@ export default function Preview() {
               <section>{right}</section>
             </div>
           </div>
-        </Box>
-        <Paper
-          component={'section'}
-          sx={{
-            padding: '0.5rem',
-            display: 'flex',
-            justifyContent: 'center',
-            margin: '0 3% 0% 3%',
-          }}
-        >
-          <Box sx={{ display: 'flex', alignItems: 'center' }}>
-            <Button
-              disabled={numberOfPages === 1}
-              onClick={() => handlePageAction(-1)}
-            >
-              Prev
-            </Button>
-            <Typography>
-              {page + 1}/{numberOfPages}
-            </Typography>
-            <Button
-              disabled={numberOfPages === 1}
-              onClick={() => handlePageAction(+1)}
-            >
-              Next
-            </Button>
-          </Box>
 
-          <ExportCv></ExportCv>
-
-          <Button
-            onClick={() => {
-              setExport(true)
-            }}
-          >
-            Eksporter
-          </Button>
-        </Paper>
+          {/* Navigation overlay at bottom */}
+          {numberOfPages > 1 && (
+            <Box
+              sx={{
+                position: 'absolute',
+                bottom: '1rem',
+                left: '50%',
+                transform: 'translateX(-50%)',
+                zIndex: 10,
+                backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                backdropFilter: 'blur(4px)',
+                borderRadius: '24px',
+                padding: '0.5rem 1rem',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+                boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+              }}
+            >
+              <Button
+                size="small"
+                onClick={() => handlePageAction(-1)}
+                sx={{ minWidth: 'auto', textTransform: 'none' }}
+              >
+                Prev
+              </Button>
+              <Typography variant="body2" sx={{ mx: 1, fontWeight: 500 }}>
+                {page + 1}/{numberOfPages}
+              </Typography>
+              <Button
+                size="small"
+                onClick={() => handlePageAction(+1)}
+                sx={{ minWidth: 'auto', textTransform: 'none' }}
+              >
+                Next
+              </Button>
+            </Box>
+          )}
+        </div>
       </div>
     </>
   )

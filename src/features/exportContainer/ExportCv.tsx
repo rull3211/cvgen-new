@@ -1,17 +1,39 @@
 import { Box, Button, Input } from '@mui/material'
 import { useCv } from '@/hooks/useCv'
+import { useShallow } from 'zustand/shallow'
 
 const ExportCv = () => {
-  const cv = useCv()
+  const {
+    summary,
+    workExperience,
+    education,
+    personalDetails,
+    order,
+    skills,
+    formHeaders,
+    setState,
+  } = useCv(
+    useShallow((state) => ({
+      summary: state.summary,
+      workExperience: state.workExperience,
+      education: state.education,
+      personalDetails: state.personalDetails,
+      order: state.order,
+      skills: state.skills,
+      formHeaders: state.formHeaders,
+      setState: state.setState,
+    })),
+  )
   const handleDownload = () => {
     // 1. Your JSON object
     const dataToDownload = {
-      summary: cv.summary,
-      workExperience: cv.workExperience,
-      education: cv.education,
-      personalDetails: cv.personalDetails,
-      order: cv.order,
-      skills: cv.skills,
+      summary,
+      workExperience,
+      education,
+      personalDetails,
+      order,
+      skills,
+      formHeaders,
     }
     // 2. Convert JSON object to a string
     const jsonString = JSON.stringify(dataToDownload, null, 2)
@@ -46,7 +68,7 @@ const ExportCv = () => {
 
       try {
         const newState = JSON.parse(result)
-        cv.setState(newState)
+        setState(newState)
       } catch (err) {
         console.error(err)
       }
