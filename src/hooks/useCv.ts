@@ -140,6 +140,7 @@ const createInitialState = (): CvState => ({
     skills: 'Ferdigheter',
     education: 'Utdanning',
     workExperience: 'Arbeidserfaring',
+    summary: 'Oppsummering',
   },
   skills: [{ type: 'skill', content: '', id: crypto.randomUUID(), level: '1' }],
   _isLoading: false,

@@ -21,6 +21,7 @@ export default function PDFPagination() {
       education: state.education,
       skills: state.skills,
       personalDetails: state.personalDetails,
+      formHeaders: state.formHeaders,
     })),
   )
   const { setLeftPages, setRightPages, setPageNumber } = usePagination(
@@ -138,6 +139,7 @@ export default function PDFPagination() {
                       <SummaryContent
                         key={el.id + '-paginator'}
                         text={el.content}
+                        header={cvState.formHeaders['summary']}
                       />
                     )
                   return (

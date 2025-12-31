@@ -59,7 +59,16 @@ export default function Editor({ isSmallWidth }: { isSmallWidth: boolean }) {
       <ClosableTab header={'Personalia'}>
         <PersoalDetails />
       </ClosableTab>
-      <ClosableTab header={'Oppsummering'}>
+      <ClosableTab
+        header={
+          <TextField
+            value={formHeaders['summary']}
+            onChange={(el) => {
+              updateFormHeaders('summary', el.target.value)
+            }}
+          />
+        }
+      >
         <SummaryEditor />
       </ClosableTab>
       <ClosableTab

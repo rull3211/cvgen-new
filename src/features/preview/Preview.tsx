@@ -108,7 +108,13 @@ export default function Preview() {
 
       try {
         if (render.type === 'summary') {
-          return <SummaryContent key={render.id} text={render.content} />
+          return (
+            <SummaryContent
+              key={render.id}
+              text={render.content}
+              header={cvState.formHeaders['summary']}
+            />
+          )
         } else {
           const { by, tittel, institusjon, fra, til, beskrivelse } = render
           const renderHasContent =

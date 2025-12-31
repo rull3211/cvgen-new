@@ -30,6 +30,7 @@ export default function Export(props: Props) {
       education: state.education,
       skills: state.skills,
       personalDetails: state.personalDetails,
+      formHeaders: state.formHeaders,
     })),
   )
 
@@ -60,14 +61,15 @@ export default function Export(props: Props) {
                 console.log(render)
                 if (render.type === 'summary') {
                   return (
-                    <SummaryContent key={render.id} text={render.content} />
+                    <SummaryContent
+                      key={render.id}
+                      text={render.content}
+                      header={cvState.formHeaders['summary']}
+                    />
                   )
                 } else {
                   if (index === 0) {
-                    const text =
-                      render.type === 'workExperience'
-                        ? 'Arbeidserfaring'
-                        : 'Utdanning'
+                    const text = cvState.formHeaders[render.type] || render.type
                     return (
                       <>
                         <Typography
@@ -103,9 +105,10 @@ export default function Export(props: Props) {
                       )
                     } else {
                       if (index === 0) {
+                        const text = cvState.formHeaders['skills'] || 'Skills'
                         return (
                           <>
-                            <Typography variant="h2">Skills</Typography>
+                            <Typography variant="h2">{text}</Typography>
                             <SkillContent skill={render} />
                           </>
                         )
