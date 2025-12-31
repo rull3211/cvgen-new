@@ -1,0 +1,15 @@
+# Ignore development files
+node_modules
+npm-debug.log
+.git
+.gitignore
+README.md
+
+# Ignore local environment files
+.env
+.env.local
+PrivateServiceAccount.json
+
+# Ignore build artifacts
+dist
+build

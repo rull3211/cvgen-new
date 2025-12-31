@@ -10,9 +10,9 @@
     "start": "node server.cjs",
     "build": "echo 'No build step for backend'",
     "deploy": "pnpm run docker:build && pnpm run docker:push && pnpm run cloud:deploy",
-    "docker:build": "docker build --platform linux/amd64 -t europe-west1-docker.pkg.dev/cv-generator-475321/cvgen-image/cvgen-backend:latest .",
+    "docker:build": "cd ../.. && docker build --platform linux/amd64 -f packages/backend/Dockerfile -t europe-west1-docker.pkg.dev/cv-generator-475321/cvgen-image/cvgen-backend:latest .",
     "docker:push": "docker push europe-west1-docker.pkg.dev/cv-generator-475321/cvgen-image/cvgen-backend:latest",
-    "cloud:deploy": "gcloud run deploy cvgenerator --image europe-west1-docker.pkg.dev/cv-generator-475321/cvgen-image/cvgen-backend:latest --region europe-west1 --platform managed"
+    "cloud:deploy": "gcloud run deploy cvgenerator --image europe-west1-docker.pkg.dev/cv-generator-475321/cvgen-image/cvgen-backend:latest --region europe-west1 --platform managed --set-secrets=SERVICE_ACCOUNT_JSON=firebaseServiceAccount:latest"
   },
   "dependencies": {
     "body-parser": "^2.2.0",

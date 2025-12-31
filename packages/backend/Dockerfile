@@ -29,22 +29,30 @@ RUN wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | apt-key add
     apt-get update && apt-get install -y google-chrome-stable && \
     rm -rf /var/lib/apt/lists/*
 
+# Install pnpm globally
+RUN npm install -g pnpm@10.25.0
+
 # Set working directory
 WORKDIR /app
 
-# Copy dependency manifests first (for caching)
-COPY package*.json ./
+# Copy workspace configuration and lock file from root
+COPY pnpm-workspace.yaml ./pnpm-workspace.yaml
+COPY pnpm-lock.yaml ./pnpm-lock.yaml
 
-# Install production dependencies
-RUN npm ci
+# Copy package.json files (root and backend)
+COPY package.json ./package.json
+COPY packages/backend/package.json ./packages/backend/package.json
 
-# Copy all project files
-COPY . .
+# Install dependencies using pnpm (only backend + its deps)
+RUN pnpm install --filter @cvgen/backend --prod --frozen-lockfile
 
-# Build frontend (Vite)
-RUN npm run build
+# Copy backend server file
+COPY packages/backend/server.cjs ./packages/backend/server.cjs
 
-# Switch back to Puppeteer’s expected non-root user
+# Set working directory to backend package
+WORKDIR /app/packages/backend
+
+# Switch back to Puppeteer's expected non-root user
 USER pptruser
 
 # Environment setup

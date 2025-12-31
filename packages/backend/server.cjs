@@ -5,12 +5,28 @@ const cors = require("cors");
 const path = require("path");
 const zlib = require("zlib");
 const admin = require("firebase-admin");
-const serviceAccount = require("./PrivateServiceAccount.json");
 
+// Try to load service account from environment or file
+let credential;
 const serviceAccFromManager = process.env.SERVICE_ACCOUNT_JSON;
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccFromManager || serviceAccount),
-});
+
+if (serviceAccFromManager) {
+  // Use service account JSON from environment variable (production)
+  credential = admin.credential.cert(JSON.parse(serviceAccFromManager));
+} else {
+  // Try to load from file (local development)
+  try {
+    const serviceAccount = require("./PrivateServiceAccount.json");
+    credential = admin.credential.cert(serviceAccount);
+  } catch (error) {
+    console.error(
+      "ERROR: No service account found. Set SERVICE_ACCOUNT_JSON environment variable or provide PrivateServiceAccount.json"
+    );
+    process.exit(1);
+  }
+}
+
+admin.initializeApp({ credential });
 
 module.exports = admin;
 
