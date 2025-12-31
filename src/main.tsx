@@ -7,6 +7,7 @@ import {
   createRouter,
   redirect,
   Outlet,
+  useRouterState,
 } from '@tanstack/react-router'
 
 import './styles.css'
@@ -15,16 +16,24 @@ import Login from './features/auth/Login.tsx'
 import CvListPage from './features/cvList/CvListPage.tsx'
 import CvEditor from './features/cvAppLayout/CvEditor.tsx'
 import GlobalSnackbar from './components/GlobalSnackbar.tsx'
+import Navbar from './components/Navbar/Navbar.tsx'
 
 // Auth layout component
 function AuthLayout() {
   const { user, loading } = useAuth()
+  const routerState = useRouterState()
 
   if (loading) return <div>Loading...</div>
   if (!user) return <Login />
 
+  // Show navbar only on CV editor routes
+  const showNavbar =
+    routerState.location.pathname.startsWith('/cvs/') &&
+    routerState.location.pathname !== '/cvs'
+
   return (
     <>
+      {showNavbar && <Navbar />}
       <Outlet />
       <GlobalSnackbar />
     </>

@@ -1,23 +1,11 @@
-import {
-  Box,
-  Button,
-  Paper,
-  Typography,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogContentText,
-  DialogActions,
-} from '@mui/material'
+import { Box, Button, Paper, Typography } from '@mui/material'
 import { useEffect, useRef, useState } from 'react'
-import { useNavigate } from '@tanstack/react-router'
 import PDFPagination from '../paginatedTest/PaginatedApp'
 import Export from '../exportContainer/Export'
 import ExperienceContent from '../pdfContents/ExperienceContent'
 import PersonalDetailsContent from '../pdfContents/PersonalDetailsContent'
 import SummaryContent from '../pdfContents/SummaryContent'
 import SkillContent from '../pdfContents/SkillsContent'
-import ExportCv from '../exportContainer/ExportCv'
 import styles from './PreviewStyles.module.scss'
 import { a4Height, a4width } from '@/constants'
 import { useCv } from '@/hooks/useCv'
@@ -26,13 +14,11 @@ import { usePagination } from '@/hooks/usePagination'
 import { useAuth } from '@/hooks/useAuth'
 import { useScaleOnResize } from './hooks/useScale'
 import { useShallow } from 'zustand/shallow'
-import { useSnackbar } from '@/hooks/useSnackbar'
+import { useExportTrigger } from '@/hooks/useExportTrigger'
 
 export default function Preview() {
-  const navigate = useNavigate()
   const { user } = useAuth()
-  const showSnackbar = useSnackbar((state) => state.showSnackbar)
-  const deleteFromFirestore = useCv((state) => state.deleteFromFirestore)
+  const { shouldExport, resetExport } = useExportTrigger()
   const { leftPages, rightPages, pageNumber } = usePagination(
     useShallow((state) => ({
       leftPages: state.leftPages,
@@ -43,27 +29,17 @@ export default function Preview() {
   const numberOfPages = Math.max(pageNumber.left, pageNumber.right) + 1
   const [page, setPage] = useState(0)
   const [startExport, setExport] = useState(false)
-  const [isDeleting, setIsDeleting] = useState(false)
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false)
+
+  // Watch for export trigger from drawer
+  useEffect(() => {
+    if (shouldExport) {
+      setExport(true)
+      resetExport()
+    }
+  }, [shouldExport, resetExport])
 
   function handlePageAction(num: number) {
     setPage((page + num + numberOfPages) % numberOfPages)
-  }
-
-  const handleDeleteCV = async () => {
-    setShowDeleteDialog(false)
-    setIsDeleting(true)
-    try {
-      await deleteFromFirestore()
-      showSnackbar('CV slettet!', 'success')
-      // Navigate back to CV list after successful deletion
-      navigate({ to: '/cvs' })
-    } catch (error) {
-      console.error('Failed to delete CV:', error)
-      showSnackbar('Kunne ikke slette CV. Prøv igjen.', 'error')
-    } finally {
-      setIsDeleting(false)
-    }
   }
 
   const exportPreview = async () => {
@@ -73,7 +49,6 @@ export default function Preview() {
     const html = node.outerHTML
     const token = await user?.getIdToken()
 
-    // ✨ Editable list of tag selectors to exclude
     const excludedTagSelectors = ['html', 'body']
 
     const cssText = Array.from(document.styleSheets)
@@ -96,7 +71,6 @@ export default function Preview() {
             .map((rule) => rule.cssText)
             .join('\n')
         } catch (e) {
-          // Skip cross-origin stylesheets gracefully
           return ''
         }
       })
@@ -125,12 +99,10 @@ export default function Preview() {
   )
   const right = cvState.order.right.flatMap((el) => {
     const pages = rightPages[el][page]
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if (!pages) return []
 
     return pages.flatMap((index) => {
       const render = cvState[el][index]
-      // Guard against undefined render
       if (!render) return []
 
       try {
@@ -170,7 +142,6 @@ export default function Preview() {
   })
   const left = cvState.order.left.map((el) => {
     const pages = leftPages[el][page]
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if (!pages) return null
 
     return (
@@ -290,47 +261,7 @@ export default function Preview() {
               Next
             </Button>
           </Box>
-
-          <ExportCv></ExportCv>
-
-          <Button
-            onClick={() => {
-              setExport(true)
-            }}
-          >
-            Eksporter
-          </Button>
-
-          <Button
-            onClick={() => setShowDeleteDialog(true)}
-            disabled={isDeleting}
-            color="error"
-            variant="outlined"
-            sx={{ marginLeft: '1rem' }}
-          >
-            {isDeleting ? 'Sletter...' : 'Slett CV'}
-          </Button>
         </Paper>
-
-        {/* Delete Confirmation Dialog */}
-        <Dialog
-          open={showDeleteDialog}
-          onClose={() => setShowDeleteDialog(false)}
-        >
-          <DialogTitle>Slett CV</DialogTitle>
-          <DialogContent>
-            <DialogContentText>
-              Er du sikker på at du vil slette hele CV-en? Dette kan ikke
-              angres.
-            </DialogContentText>
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={() => setShowDeleteDialog(false)}>Avbryt</Button>
-            <Button onClick={handleDeleteCV} color="error" autoFocus>
-              Slett
-            </Button>
-          </DialogActions>
-        </Dialog>
       </div>
     </>
   )
