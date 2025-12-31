@@ -10,6 +10,7 @@ import {
   DialogActions,
 } from '@mui/material'
 import { useEffect, useRef, useState } from 'react'
+import { useNavigate } from '@tanstack/react-router'
 import PDFPagination from '../paginatedTest/PaginatedApp'
 import Export from '../exportContainer/Export'
 import ExperienceContent from '../pdfContents/ExperienceContent'
@@ -28,6 +29,7 @@ import { useShallow } from 'zustand/shallow'
 import { useSnackbar } from '@/hooks/useSnackbar'
 
 export default function Preview() {
+  const navigate = useNavigate()
   const { user } = useAuth()
   const showSnackbar = useSnackbar((state) => state.showSnackbar)
   const deleteFromFirestore = useCv((state) => state.deleteFromFirestore)
@@ -54,6 +56,8 @@ export default function Preview() {
     try {
       await deleteFromFirestore()
       showSnackbar('CV slettet!', 'success')
+      // Navigate back to CV list after successful deletion
+      navigate({ to: '/cvs' })
     } catch (error) {
       console.error('Failed to delete CV:', error)
       showSnackbar('Kunne ikke slette CV. Prøv igjen.', 'error')

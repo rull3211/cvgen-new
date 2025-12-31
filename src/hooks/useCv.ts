@@ -125,7 +125,9 @@ function createEmptyPersonalDetails(): PersonalDetails {
 let isLoadingFromFirestore = false
 
 export type ExperienceKey = 'workExperience' | 'education'
-const initialState: CvState = {
+
+// Function to create fresh initial state (generates new UUIDs each time)
+const createInitialState = (): CvState => ({
   summary: [{ type: 'summary', content: '', id: crypto.randomUUID() }],
   workExperience: [createEmptyExperience('workExperience')],
   education: [createEmptyExperience('education')],
@@ -142,7 +144,9 @@ const initialState: CvState = {
   skills: [{ type: 'skill', content: '', id: crypto.randomUUID(), level: '1' }],
   _isLoading: false,
   _cvId: null,
-}
+})
+
+const initialState: CvState = createInitialState()
 
 export const useCv = create(
   immer<CvState & CvActions>((set) => ({
@@ -336,16 +340,32 @@ export const useCv = create(
 
         const data = snap.data() as CvState
 
+        // Check if this is a new CV (only has metadata, no content)
+        const isNewCv = !data.summary && !data.workExperience && !data.education
+
         // Use immer-style mutation to update only data fields
         set((state) => {
-          // Update each field individually
-          state.summary = data.summary || state.summary
-          state.workExperience = data.workExperience || state.workExperience
-          state.education = data.education || state.education
-          state.personalDetails = data.personalDetails || state.personalDetails
-          state.order = data.order || state.order
-          state.skills = data.skills || state.skills
-          state.formHeaders = data.formHeaders || state.formHeaders
+          if (isNewCv) {
+            // For new CVs, reset to fresh initial state
+            const freshState = createInitialState()
+            state.summary = freshState.summary
+            state.workExperience = freshState.workExperience
+            state.education = freshState.education
+            state.personalDetails = freshState.personalDetails
+            state.order = freshState.order
+            state.skills = freshState.skills
+            state.formHeaders = freshState.formHeaders
+          } else {
+            // For existing CVs, load the saved data
+            state.summary = data.summary || state.summary
+            state.workExperience = data.workExperience || state.workExperience
+            state.education = data.education || state.education
+            state.personalDetails =
+              data.personalDetails || state.personalDetails
+            state.order = data.order || state.order
+            state.skills = data.skills || state.skills
+            state.formHeaders = data.formHeaders || state.formHeaders
+          }
           state._isLoading = false
           state._cvId = cvId
         })
