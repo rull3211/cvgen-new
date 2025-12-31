@@ -1,4 +1,4 @@
-import { Box, Button, Paper, Typography } from '@mui/material'
+import { Box, Button, Typography } from '@mui/material'
 import { useEffect, useRef, useState } from 'react'
 import PDFPagination from '../paginatedTest/PaginatedApp'
 import Export from '../exportContainer/Export'
@@ -198,10 +198,10 @@ export default function Preview() {
       <div
         style={{
           display: 'flex',
-
           flexDirection: 'column',
           alignItems: 'center',
           gap: '1rem',
+          position: 'relative',
         }}
       >
         <div
@@ -211,6 +211,7 @@ export default function Preview() {
             transformOrigin: 'top left',
             display: 'flex',
             flexDirection: 'column',
+            position: 'relative',
           }}
         >
           <div
@@ -229,39 +230,46 @@ export default function Preview() {
               <section>{right}</section>
             </div>
           </div>
+
+          {/* Navigation overlay at bottom */}
+          {numberOfPages > 1 && (
+            <Box
+              sx={{
+                position: 'absolute',
+                bottom: '1rem',
+                left: '50%',
+                transform: 'translateX(-50%)',
+                zIndex: 10,
+                backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                backdropFilter: 'blur(4px)',
+                borderRadius: '24px',
+                padding: '0.5rem 1rem',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+                boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+              }}
+            >
+              <Button
+                size="small"
+                onClick={() => handlePageAction(-1)}
+                sx={{ minWidth: 'auto', textTransform: 'none' }}
+              >
+                Prev
+              </Button>
+              <Typography variant="body2" sx={{ mx: 1, fontWeight: 500 }}>
+                {page + 1}/{numberOfPages}
+              </Typography>
+              <Button
+                size="small"
+                onClick={() => handlePageAction(+1)}
+                sx={{ minWidth: 'auto', textTransform: 'none' }}
+              >
+                Next
+              </Button>
+            </Box>
+          )}
         </div>
-        <Paper
-          component={'section'}
-          sx={{
-            padding: '0.5rem',
-            display: 'flex',
-            justifyContent: 'center',
-            margin: '0 3% 0% 3%',
-          }}
-        >
-          <Box
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-            }}
-          >
-            <Button
-              disabled={numberOfPages === 1}
-              onClick={() => handlePageAction(-1)}
-            >
-              Prev
-            </Button>
-            <Typography>
-              {page + 1}/{numberOfPages}
-            </Typography>
-            <Button
-              disabled={numberOfPages === 1}
-              onClick={() => handlePageAction(+1)}
-            >
-              Next
-            </Button>
-          </Box>
-        </Paper>
       </div>
     </>
   )
