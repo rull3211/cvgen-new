@@ -1,0 +1,23 @@
+.DS_Store
+node_modules
+/dist
+/build
+*.local
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Firebase cache
+.firebase/

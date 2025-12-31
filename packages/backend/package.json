@@ -1,0 +1,28 @@
+{
+  "name": "@cvgen/backend",
+  "version": "1.0.0",
+  "private": true,
+  "type": "commonjs",
+  "main": "server.cjs",
+  "scripts": {
+    "postinstall": "npx puppeteer browsers install chrome || echo 'Chrome installation skipped (likely in Docker)'",
+    "dev": "node server.cjs",
+    "start": "node server.cjs",
+    "build": "echo 'No build step for backend'",
+    "deploy": "pnpm run docker:build && pnpm run docker:push && pnpm run cloud:deploy",
+    "docker:build": "docker build --platform linux/amd64 -t europe-west1-docker.pkg.dev/cv-generator-475321/cvgen-image/cvgen-backend:latest .",
+    "docker:push": "docker push europe-west1-docker.pkg.dev/cv-generator-475321/cvgen-image/cvgen-backend:latest",
+    "cloud:deploy": "gcloud run deploy cvgenerator --image europe-west1-docker.pkg.dev/cv-generator-475321/cvgen-image/cvgen-backend:latest --region europe-west1 --platform managed"
+  },
+  "dependencies": {
+    "body-parser": "^2.2.0",
+    "cors": "^2.8.5",
+    "express": "^5.1.0",
+    "express-rate-limit": "^8.1.0",
+    "firebase-admin": "^13.5.0",
+    "puppeteer": "^24.22.3"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

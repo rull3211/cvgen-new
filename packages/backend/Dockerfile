@@ -56,5 +56,5 @@ ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/google-chrome
 # Expose Cloud Run port
 EXPOSE 8080
 
-# Start your Node server
-CMD ["node", "src/server.cjs"]
+# Start Node server
+CMD ["node", "server.cjs"]
